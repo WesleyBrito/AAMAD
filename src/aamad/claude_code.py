@@ -18,6 +18,7 @@ RULE_ORDER = [
     "aamad-core",
     "development-workflow",
     "epics-index",
+    "delivery-workflow",
     "adapter-registry",
     "adapter-crewai",
     "adapter-claude-agent-sdk",
@@ -33,6 +34,7 @@ AGENT_IDS = [
     "backend-eng",
     "integration-eng",
     "qa-eng",
+    "devops-eng",
 ]
 
 # Default tools for Claude Code agents (most personas need these)

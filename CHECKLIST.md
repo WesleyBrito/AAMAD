@@ -54,8 +54,9 @@ This checklist guides you step-by-step through running AAMAD from Phase 1 (Defin
 ## Before Phase 2 Starts
 
 - [ ] Ensure `project-context/1.define` includes:
-  - [ ] market-research-document.md (MRD)
-  - [ ] product-requirements-document.md (PRD)
+  - [ ] mrd.md (MRD)
+  - [ ] prd.md (PRD)
+  - [ ] sad.md (SAD, after architecture step)
 - [ ] Confirm framework layout from **Install and IDE layout** is still present (re-run `aamad init` with `--overwrite` only if you intend to refresh generated files).
 - [ ] Confirm `AAMAD_TARGET_RUNTIME` is set to your chosen runtime (see **Runtime target** above).
 
@@ -129,7 +130,21 @@ Use the same persona invocation pattern as Phase 1 (Cursor `@name`, Claude Code 
 
 ---
 
-### Step 6: Local MVP Launch
+### Step 6: Deliver (`@devops.eng`)
+
+- [ ] Invoke `@devops.eng` after QA artifacts are complete.
+- [ ] Run `*prepare-release`
+  - [ ] Confirm qa.md documents MVP verification (pass or scoped gaps)
+  - [ ] Summarize release scope and version in deploy.md
+- [ ] Run `*define-deploy` and `*configure-cicd`
+  - [ ] Add minimal deploy and CI config aligned with SAD and AAMAD_TARGET_RUNTIME
+  - [ ] Do not embed secrets; reference `.env.example` keys only
+- [ ] Run `*document-deploy`
+  - [ ] Complete project-context/3.deliver/deploy.md (hosting, access control, rollback, Audit)
+
+---
+
+### Step 7: Local MVP Launch
 
 - [ ] Follow docs in setup.md and integration.md to run the full MVP locally
 - [ ] Confirm MVP chat use case works end-to-end
@@ -137,7 +152,7 @@ Use the same persona invocation pattern as Phase 1 (Cursor `@name`, Claude Code 
 
 ---
 
-### Step 7: Prepare for Next Phase
+### Step 8: Prepare for Next Phase
 
 - [ ] Archive all MVP milestone artifacts in project-context/2.build and 3.deliver
 - [ ] List all deferred/backlog features in qa.md and/or as GitHub issues

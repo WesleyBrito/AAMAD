@@ -61,7 +61,7 @@ actions:
   - develop-be
   - define-agents
 inputs:
-  - project-context/product-requirements-document.md
+  - project-context/1.define/prd.md
 outputs:
   - project-context/2.build/backend.md
 prohibited-actions:
@@ -239,6 +239,44 @@ Cursor.
     assert (out_dir / "adapter-crewai.md").exists()
     assert (out_dir / "adapter-claude-agent-sdk.md").exists()
     assert (out_dir / "adapter-cursor-sdk.md").exists()
+
+
+def test_convert_rules_includes_delivery_workflow(tmpdir):
+    """convert_rules writes delivery-workflow when present."""
+    rules_dir = tmpdir / "rules"
+    rules_dir.mkdir()
+    (rules_dir / "delivery-workflow.mdc").write_text(
+        """---
+description: Deliver workflow
+alwaysApply: true
+---
+
+## Purpose
+Deliver.
+"""
+    )
+    convert_rules(rules_dir, tmpdir, style="split")
+    assert (tmpdir / ".claude" / "rules" / "delivery-workflow.md").exists()
+
+
+def test_convert_agents_includes_devops_eng(tmpdir):
+    """convert_agents writes devops-eng when source file exists."""
+    agents_dir = tmpdir / "agents"
+    agents_dir.mkdir()
+    (agents_dir / "devops-eng.md").write_text(
+        """---
+agent:
+  name: DevOps Engineer
+  id: devops-eng
+  role: Operationalize MVP delivery.
+---
+
+# DevOps
+"""
+    )
+    out = convert_agents(agents_dir, tmpdir)
+    assert len(out) == 1
+    assert (tmpdir / ".claude" / "agents" / "devops-eng.md").exists()
 
 
 def test_install_claude_code_full(tmpdir):

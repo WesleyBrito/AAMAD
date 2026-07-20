@@ -18,8 +18,8 @@ actions:
   - stub-nonmvp        # Add stubs for non-MVP agent capabilities/roles
   - document-backend   # Maintain backend.md with implementation details
 inputs:
-  - project-context/product-requirements-document.md
-  - project-context/system-architecture-doc.md
+  - project-context/1.define/prd.md
+  - project-context/1.define/sad.md
   - project-context/2.build/setup.md
 outputs:
   - project-context/2.build/backend.md

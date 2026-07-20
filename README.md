@@ -72,7 +72,7 @@ flowchart LR
 
   subgraph P3[DELIVER]
     L1H[AGENTS]:::hdr --> L1L["• DevOps Eng"]:::list
-    L2H[RULES]:::hdr --> L2L["• continuous‑deploy<br/>• hosting‑environment<br/>• access‑control"]:::list
+    L2H[RULES]:::hdr --> L2L["• delivery‑workflow<br/>(deploy, hosting, access)"]:::list
   end
 
   P1 --> P2 --> P3
@@ -85,7 +85,7 @@ flowchart LR
 
 - **Phase 2 (Build):** Multi‑agent execution by Project Manager, System Architect, Frontend Engineer, Backend Engineer, Integration Engineer, and QA Engineer, governed by core/development-workflow rules and the selected runtime adapter rule.
 
-- **Phase 3 (Deliver):** DevOps Engineer focuses on release and runtime concerns using rules for continuous deployment, hosting environment definitions, and access control.
+- **Phase 3 (Deliver):** DevOps Engineer (`@devops.eng`) packages the validated MVP using the `delivery-workflow` rule; primary artifact is `project-context/3.deliver/deploy.md`.
 
 ---
 
@@ -165,7 +165,7 @@ your-project/
 ├── project-context/
 │   ├── 1.define/        # MRD, PRD, SAD outputs
 │   ├── 2.build/         # setup.md, frontend.md, backend.md, etc.
-│   └── 3.deliver/       # QA logs, deploy configs
+│   └── 3.deliver/       # deploy runbook and configs
 ├── AGENTS.md            # Bridge file (IDE discoverability)
 ├── CHECKLIST.md
 └── README.md
@@ -317,7 +317,7 @@ Inspect bundle contents: `aamad bundle-info --verbose` or `aamad bundle-info --i
     ├─ project-context/
     │   ├─ 1.define/     # PRD, SAD, research reports
     │   ├─ 2.build/      # Setup, frontend, backend, integration, QA
-    │   └─ 3.deliver/    # QA logs, deploy configs
+    │   └─ 3.deliver/    # deploy runbook and configs
     ├─ docs/
     ├─ CHECKLIST.md
     └─ README.md

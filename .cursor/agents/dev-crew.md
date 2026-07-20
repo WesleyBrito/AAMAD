@@ -53,3 +53,11 @@
   - Running functional and smoke tests for MVP features.
   - Logging test coverage, failures, and known gaps in qa.md.
   - Marking "future work" areas for non-functional parts.
+
+## @devops-eng - DevOps Engineer
+- Objective: Package and operationalize the validated MVP for delivery.
+- Key Tasks:
+  - Verifying QA gate and preparing release scope in deploy.md.
+  - Scaffolding deploy and CI configuration per SAD DevOps architecture.
+  - Documenting hosting environment, access control, and rollback in deploy.md.
+  - Aligning runtime packaging with the selected AAMAD_TARGET_RUNTIME adapter.

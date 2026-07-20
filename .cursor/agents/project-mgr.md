@@ -13,8 +13,8 @@ actions:
   - configure-env        # Define and document environment variables and settings
   - document-setup       # Complete setup.md
 inputs:
-  - project-context/product-requirements-document.md
-  - project-context/system-architecture-doc.md
+  - project-context/1.define/prd.md
+  - project-context/1.define/sad.md
 outputs:
   - project-context/2.build/setup.md
 prohibited-actions:

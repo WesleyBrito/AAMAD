@@ -76,7 +76,7 @@ actions:
   - develop-be
   - define-agents
 inputs:
-  - project-context/product-requirements-document.md
+  - project-context/1.define/prd.md
 outputs:
   - project-context/2.build/backend.md
 prohibited-actions:
@@ -260,6 +260,65 @@ Cursor.
     assert (out_dir / "adapter-crewai.instructions.md").exists()
     assert (out_dir / "adapter-claude-agent-sdk.instructions.md").exists()
     assert (out_dir / "adapter-cursor-sdk.instructions.md").exists()
+
+
+def test_convert_rules_includes_delivery_workflow(tmpdir):
+    """convert_rules writes delivery-workflow instructions when present."""
+    rules_dir = tmpdir / "rules"
+    rules_dir.mkdir()
+    (rules_dir / "delivery-workflow.mdc").write_text(
+        """---
+description: Deliver workflow
+alwaysApply: true
+---
+
+## Purpose
+Deliver.
+"""
+    )
+    convert_rules(rules_dir, tmpdir)
+    assert (tmpdir / ".github" / "instructions" / "delivery-workflow.instructions.md").exists()
+
+
+def test_convert_agents_includes_devops_eng(tmpdir):
+    """convert_agents writes devops-eng agent file when source exists."""
+    agents_dir = tmpdir / "agents"
+    agents_dir.mkdir()
+    (agents_dir / "devops-eng.md").write_text(
+        """---
+agent:
+  name: DevOps Engineer
+  id: devops-eng
+  role: Operationalize MVP delivery.
+---
+
+# DevOps
+"""
+    )
+    out = convert_agents(agents_dir, tmpdir)
+    assert len(out) == 1
+    assert (tmpdir / ".github" / "agents" / "devops-eng.agent.md").exists()
+
+
+def test_qa_eng_handoff_to_devops_eng(tmpdir):
+    """qa-eng agent gets Deliver MVP handoff to devops-eng."""
+    agents_dir = tmpdir / "agents"
+    agents_dir.mkdir()
+    (agents_dir / "qa-eng.md").write_text(
+        """---
+agent:
+  name: QA Engineer
+  id: qa-eng
+  role: Validate MVP.
+---
+
+# QA
+"""
+    )
+    convert_agents(agents_dir, tmpdir)
+    text = (tmpdir / ".github" / "agents" / "qa-eng.agent.md").read_text()
+    assert "devops-eng" in text
+    assert "Deliver MVP" in text
 
 
 def test_convert_agents_creates_vscode_format(tmpdir, sample_agent):

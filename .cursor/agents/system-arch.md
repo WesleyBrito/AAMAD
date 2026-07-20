@@ -17,8 +17,8 @@ actions:
   - create-sad --mvp    # Generate an MVP-focused SAD (lean views, minimal decisions, explicit deferrals).
   - create-sfs          # Create a System Functional Specification for one feature/user story.
 inputs:
-  - project-context/1.define/market-research.md
-  - project-context/1.define/product-requirements-document.md
+  - project-context/1.define/mrd.md
+  - project-context/1.define/prd.md
   - project-context/1.define/user-stories/*.md
   - .cursor/templates/sad-template.md
   - .cursor/templates/sfs-template.md
@@ -41,7 +41,7 @@ Own the end-to-end definition of system architecture and feature-level functiona
 - `*create-sfs` — Create an SFS for a specified feature or user story: purpose, scope, inputs, processing behavior, outputs, validations, error handling, and constraints; reference PRD/story IDs.
 
 ## Usage
-- Load market-research.md, product-requirements-document.md, and relevant user stories at start; apply sad-template.md or sfs-template.md exactly, filling sections without changing headings.
+- Load mrd.md, prd.md, and relevant user stories at start; apply sad-template.md or sfs-template.md exactly, filling sections without changing headings.
 - For MVP, minimize layers/components, prefer simplest deployment and data flows, document deferred capabilities and architectural trade-offs.
 - This persona runs with the active runtime configured by `AAMAD_TARGET_RUNTIME`:
     - Default is `crewai` for this release.

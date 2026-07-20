@@ -13,8 +13,8 @@ actions:
   - style-ui           # Apply Tailwind styling and responsive layout
   - document-frontend  # Document all FE work in frontend.md
 inputs:
-  - project-context/product-requirements-document.md
-  - project-context/system-architecture-doc.md
+  - project-context/1.define/prd.md
+  - project-context/1.define/sad.md
   - project-context/2.build/setup.md
 outputs:
   - project-context/2.build/frontend.md

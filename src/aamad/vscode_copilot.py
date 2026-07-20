@@ -18,6 +18,7 @@ RULE_ORDER = [
     "aamad-core",
     "development-workflow",
     "epics-index",
+    "delivery-workflow",
     "adapter-registry",
     "adapter-crewai",
     "adapter-claude-agent-sdk",
@@ -33,6 +34,7 @@ AGENT_IDS = [
     "backend-eng",
     "integration-eng",
     "qa-eng",
+    "devops-eng",
 ]
 
 # Default Copilot tools (guide §4.2 Step 2)
@@ -78,6 +80,14 @@ HANDOFFS: dict[str, list[dict[str, Any]]] = {
             "label": "→ Run QA Tests",
             "agent": "qa-eng",
             "prompt": "Run functional and smoke tests for the implementation in project-context/2.build/.",
+            "send": False,
+        },
+    ],
+    "qa-eng": [
+        {
+            "label": "→ Deliver MVP",
+            "agent": "devops-eng",
+            "prompt": "Prepare release and deploy configuration per project-context/2.build/qa.md and SAD.",
             "send": False,
         },
     ],
