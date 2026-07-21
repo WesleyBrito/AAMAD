@@ -343,7 +343,7 @@ Inspect bundle contents: `aamad bundle-info --verbose` or `aamad bundle-info --i
 
 The Product Manager persona (`@product-mgr`) conducts prompt-driven discovery and context setup to standardize project scoping:
 
-- **Market Research:** Generate Market Research Document (MRD) using `.cursor/templates/mr-template.md`
+- **Market Research:** Generate Market Research Document (MRD) using `.cursor/templates/mrd-template.md`
 - **Requirements:** Generate Product Requirements Document (PRD) using `.cursor/templates/prd-template.md`
 - **Context Summary:** Create comprehensive context handoff artifacts for technical teams
 - **Validation:** Ensure completeness of market analysis, user personas, feature requirements, and success metrics
