@@ -4,8 +4,10 @@ import argparse
 from pathlib import Path
 
 from .installer import ArtifactInstaller, extract_artifacts, get_bundle_path
+from .validator import format_report, validate_project
 
 IDE_CHOICES = ["cursor", "claude-code", "vscode"]
+PHASE_CHOICES = ["auto", "define", "build", "deliver"]
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -55,6 +57,23 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print one path per line instead of a summarized count.",
     )
+
+    validate_cmd = sub.add_parser(
+        "validate",
+        help="Validate project-context artifacts against AAMAD quality gates.",
+    )
+    validate_cmd.add_argument(
+        "--dest",
+        type=Path,
+        default=Path.cwd(),
+        help="Project root containing project-context/ (default: cwd).",
+    )
+    validate_cmd.add_argument(
+        "--phase",
+        choices=PHASE_CHOICES,
+        default="auto",
+        help="Phase gate to enforce: auto (default), define, build, or deliver.",
+    )
     return parser
 
 
@@ -85,6 +104,11 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(f"{len(files)} files bundled ({args.ide})")
         return 0
+
+    if args.command == "validate":
+        result = validate_project(args.dest, phase=args.phase)
+        print(format_report(result))
+        return 0 if result.ok else 1
 
     parser.error("Unknown command")
     return 2

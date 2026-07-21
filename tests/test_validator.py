@@ -1,0 +1,98 @@
+"""Tests for aamad validate quality gates."""
+
+from __future__ import annotations
+
+import tempfile
+from pathlib import Path
+
+import pytest
+
+from aamad.cli import main
+from aamad.validator import format_report, validate_project
+
+TERMINAL = """
+## Sources
+- test
+
+## Assumptions
+- none
+
+## Open Questions
+- none
+
+## Audit
+- AAMAD_TARGET_RUNTIME: crewai
+- persona: test
+"""
+
+
+def _write(path: Path, body: str = "# Doc\n\n" + TERMINAL) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(body, encoding="utf-8")
+
+
+@pytest.fixture
+def project(tmp_path: Path) -> Path:
+    return tmp_path
+
+
+def test_define_requires_prd_and_sad(project: Path) -> None:
+    result = validate_project(project, phase="define")
+    assert not result.ok
+    paths = {i.path for i in result.issues if i.level == "error"}
+    assert "project-context/1.define/prd.md" in paths
+    assert "project-context/1.define/sad.md" in paths
+
+
+def test_define_passes_with_terminal_sections(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    result = validate_project(project, phase="define")
+    assert result.ok, format_report(result)
+
+
+def test_missing_heading_is_error(project: Path) -> None:
+    _write(
+        project / "project-context/1.define/prd.md",
+        "# PRD\n\n## Sources\n\n## Assumptions\n\n## Open Questions\n",
+    )
+    _write(project / "project-context/1.define/sad.md")
+    result = validate_project(project, phase="define")
+    assert not result.ok
+    assert any("Audit" in i.message for i in result.issues)
+
+
+def test_deliver_requires_qa_gate(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    _write(project / "project-context/3.deliver/deploy.md")
+    result = validate_project(project, phase="deliver")
+    assert not result.ok
+    assert any("qa.md" in i.path for i in result.issues if i.level == "error")
+
+
+def test_deliver_passes_with_qa_and_deploy(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    for name in ("setup.md", "frontend.md", "backend.md", "integration.md", "qa.md"):
+        _write(project / "project-context/2.build" / name)
+    _write(project / "project-context/3.deliver/deploy.md")
+    result = validate_project(project, phase="deliver")
+    assert result.ok, format_report(result)
+
+
+def test_cli_validate_exit_codes(project: Path) -> None:
+    assert main(["validate", "--dest", str(project), "--phase", "define"]) == 1
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    assert main(["validate", "--dest", str(project), "--phase", "define"]) == 0
+
+
+def test_mrd_optional_warns_only(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    result = validate_project(project, phase="define")
+    assert result.ok
+    assert any(
+        i.level == "warning" and i.path.endswith("mrd.md") for i in result.issues
+    )
