@@ -11,11 +11,13 @@ from __future__ import annotations
 from importlib import metadata
 
 from .installer import ArtifactInstaller, extract_artifacts, get_bundle_path
+from .validator import validate_project
 
 __all__ = [
     "ArtifactInstaller",
     "extract_artifacts",
     "get_bundle_path",
+    "validate_project",
     "__version__",
 ]
 

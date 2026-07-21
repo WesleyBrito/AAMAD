@@ -20,6 +20,7 @@ IDE_BUNDLES = {
 AGENTS_MD_TEMPLATE = """# AAMAD Agent Framework
 
 This project uses the AAMAD framework for multi-agent development.
+Framework version: {version}
 See the full agent definitions in the IDE-specific directories.
 
 ## Agent Personas
@@ -27,21 +28,32 @@ See the full agent definitions in the IDE-specific directories.
 - **@system.arch** — System Architect: Produces SAD and SFS documents
 - **@project.mgr** — Project Manager: Scaffolds project and environment
 - **@frontend.eng** — Frontend Developer: Builds MVP chat interface
-- **@backend.eng** — Backend Developer: Builds CrewAI backend
+- **@backend.eng** — Backend Developer: Builds backend for the selected runtime
 - **@integration.eng** — Integration Engineer: Connects frontend and backend
 - **@qa.eng** — QA Engineer: Validates MVP functionality
+- **@devops.eng** — DevOps Engineer: Packages deploy/CI and delivery runbook
 
 ## Workflow
-1. **Define** (Phase 1): @product-mgr → Market Research → PRD → @system.arch → SAD
+1. **Define** (Phase 1): @product-mgr → Market Research (optional) → PRD → @system.arch → SAD
 2. **Build** (Phase 2): @project.mgr → @frontend.eng / @backend.eng → @integration.eng → @qa.eng
-3. **Deliver** (Phase 3): DevOps deployment
+3. **Deliver** (Phase 3): @devops.eng → deploy.md
 
 ## Rules
 All development follows AAMAD core rules. See project-context/ for artifacts.
+Run `aamad validate` to check artifact quality gates.
 
 ## Agent Definitions
 {agents_dir_note}
 """
+
+
+def _framework_version() -> str:
+    try:
+        from importlib import metadata
+
+        return metadata.version("aamad")
+    except Exception:  # pragma: no cover - local editable without metadata
+        return "0.0.0"
 
 
 def get_bundle_path(ide: str = "cursor") -> Path:
@@ -86,6 +98,7 @@ def write_agents_md(
         )
     content = AGENTS_MD_TEMPLATE.format(
         agents_dir_note=_agents_dir_note(ide),
+        version=_framework_version(),
     )
     path.write_text(content, encoding="utf-8")
     return path

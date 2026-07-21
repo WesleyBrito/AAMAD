@@ -39,29 +39,33 @@ def _add_to_zip(zf: zipfile.ZipFile, root: Path, items: list[str]) -> None:
             zf.write(file, arcname=str(rel))
 
 
-def build_cursor_bundle() -> None:
-    """Build the Cursor-format bundle (aamad_bundle.zip)."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    if CURSOR_BUNDLE.exists():
-        CURSOR_BUNDLE.unlink()
+def build_cursor_bundle(output: Path | None = None) -> Path:
+    """Build the Cursor-format bundle. Writes to ``output`` or the package data path."""
+    target = Path(output) if output is not None else CURSOR_BUNDLE
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        target.unlink()
 
-    with zipfile.ZipFile(CURSOR_BUNDLE, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+    with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         _add_to_zip(zf, ROOT, CURSOR_INCLUDE)
-    print(f"Updated Cursor bundle at {CURSOR_BUNDLE}")
+    print(f"Updated Cursor bundle at {target}")
+    return target
 
 
-def build_claude_bundle() -> None:
-    """Build the Claude Code-format bundle (aamad_claude_bundle.zip)."""
+def build_claude_bundle(output: Path | None = None) -> Path:
+    """Build the Claude Code-format bundle. Writes to ``output`` or the package data path."""
     import sys
+    import tempfile
+
     sys.path.insert(0, str(ROOT / "src"))
     from aamad.claude_code import install_claude_code
 
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    if CLAUDE_BUNDLE.exists():
-        CLAUDE_BUNDLE.unlink()
+    target = Path(output) if output is not None else CLAUDE_BUNDLE
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        target.unlink()
 
     # Stage: run conversion to produce .claude/ in a temp dir
-    import tempfile
     with tempfile.TemporaryDirectory() as tmp:
         stage = Path(tmp)
         # Conversion needs .cursor/ as source; use repo root
@@ -80,10 +84,11 @@ def build_claude_bundle() -> None:
             (stage / ".cursor" / "templates").parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(templates_src, stage / ".cursor" / "templates", dirs_exist_ok=True)
 
-        with zipfile.ZipFile(CLAUDE_BUNDLE, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             _add_to_zip(zf, stage, [".claude", "project-context", ".cursor", "CHECKLIST.md", "README.md"])
 
-    print(f"Updated Claude Code bundle at {CLAUDE_BUNDLE}")
+    print(f"Updated Claude Code bundle at {target}")
+    return target
 
 
 def build_bundle() -> None:
