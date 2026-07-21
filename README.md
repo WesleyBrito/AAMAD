@@ -5,33 +5,21 @@ It systematizes research-driven planning, modular AI agent workflows, and rapid 
 
 ---
 
-## Principles and benefits
-
-AAMAD changes “vibe coding” from ad-hoc prompting into a **context-first, persona-driven** workflow:
-
-- **Single-responsibility personas** own clear epics (Define → Build → Deliver) with explicit inputs, outputs, and prohibited actions.
-- **Artifacts over chat memory:** PRD, SAD, and phase docs under `project-context/` make decisions auditable and reproducible.
-- **Runtime adapters are an implementation choice** (`AAMAD_TARGET_RUNTIME`), not the methodology itself.
-- **Quality gates** (required headings, optional `aamad validate`, QA → security → deliver) keep MVP scope honest.
-
-**Benefits you can expect:** clearer requirements before code, less rework from underspecified prompts, traceable handoffs between agents, and documentation that stays useful when you re-sync after code changes.
-
----
-
 ## Table of Contents
 
-- [Principles and benefits](#principles-and-benefits)
 - [What is AAMAD?](#what-is-aamad)
-- [Runtime adapters](#runtime-adapters)
-- [AAMAD phases at a glance](#aamad-phases-at-a-glance)
 - [What AAMAD is not](#what-aamad-is-not)
+- [Principles and benefits](#principles-and-benefits)
+- [Core Concepts](#core-concepts)
+- [AAMAD phases at a glance](#aamad-phases-at-a-glance)
 - [Installation](#installation)
 - [Using AAMAD in your IDE](#using-aamad-in-your-ide)
 - [Repository Structure](#repository-structure)
+- [Runtime adapters](#runtime-adapters)
 - [How to Use the Framework](#how-to-use-the-framework)
-- [Phase 1: Define Workflow (Product Manager)](#phase-1-define-workflow-product-manager)
-- [Phase 2: Build Workflow (Multi-Agent)](#phase-2-build-workflow-multi-agent)
-- [Core Concepts](#core-concepts)
+- [Phase 1: Define Workflow (Product Manager)](#phase-1-define-stage-product-manager)
+- [Phase 2: Build Workflow (Multi-Agent)](#phase-2-build-stage-multi-agent)
+- [Phase 3: Deliver Stage (DevOps)](#phase-3-deliver-stage-devops)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -54,15 +42,37 @@ You can use AAMAD across multiple development environments: see [Using AAMAD in 
 
 ---
 
-## Runtime adapters
+## What AAMAD is not
 
-Use `AAMAD_TARGET_RUNTIME` to choose the runtime target for the generated multi-agent application in Phase 2:
+- AAMAD is not a programmatic runtime orchestrator for its own Define → Build → Deliver phases.
+- Runtime adapter selection does not change AAMAD phase orchestration; it only changes the runtime conventions used by Build-phase implementation personas.
+- Headless orchestration of AAMAD phases remains out of scope (see current release notes / changelog).
 
-| Runtime | Status | Best fit |
-| :------ | :----- | :------- |
-| `crewai` | Default | Declarative task orchestration with YAML-first runtime configuration |
-| `claude-agent-sdk` | Supported | Agentic runtime harness with hooks, MCP, and session control |
-| `cursor-sdk` | Supported | TypeScript-first Cursor runtime integration with explicit tool/runtime contracts |
+---
+
+## Principles and benefits
+
+AAMAD changes “vibe coding” from ad-hoc prompting into a **context-first, persona-driven** workflow:
+
+- **Single-responsibility personas** own clear epics (Define → Build → Deliver) with explicit inputs, outputs, and prohibited actions.
+- **Artifacts over chat memory:** PRD, SAD, and phase docs under `project-context/` make decisions auditable and reproducible.
+- **Runtime adapters are an implementation choice** (`AAMAD_TARGET_RUNTIME`), not the methodology itself.
+- **Quality gates** (required headings, optional `aamad validate`, QA → security → deliver) keep MVP scope honest.
+
+**Benefits you can expect:** clearer requirements before code, less rework from underspecified prompts, traceable handoffs between agents, and documentation that stays useful when you re-sync after code changes.
+
+---
+
+## Core Concepts
+
+- **Persona-driven development:** Each workflow is owned and documented by a clear AI agent persona with a single responsibility principle.
+- **Context artifacts:** All major actions, decisions, and documentation are stored as markdown artifacts, ensuring explainability and reproducibility.
+- **Quality gates:** Required artifact headings, optional `aamad validate`, and QA → security → deliver sequencing.
+- **Project configuration:** Optional `aamad.config.yml` for shared language, UI, testing, and security preferences across personas.
+- **Documentation sync:** After enhancing generated code, use `prompt-sync-docs` so `project-context/` stays aligned with the implementation.
+- **Parallelizable epics:** Big tasks are broken into epics, making development faster and more autonomous while retaining control over quality.
+- **Reusability:** Framework reusable for any project—simply drop in your PRD/SAD and let the agents execute.
+- **Open, transparent, and community-driven:** All patterns and artifacts are readable, auditable, and extendable.
 
 ---
 
@@ -76,17 +86,17 @@ flowchart LR
   %% AAMAD phases overview
   subgraph P1[DEFINE]
     D1H[ PERSONA ]:::hdr --> D1L["• Product Manager<br/>(@product-mgr)"]:::list
-    D2H[TEMPLATES]:::hdr --> D2L["• Market Research<br/>• PRD"]:::list
+    D2H[TEMPLATES]:::hdr --> D2L["• System Description<br/>• MRD optional<br/>• PRD / stories"]:::list
   end
 
   subgraph P2[BUILD]
-    B1H[AGENTS]:::hdr --> B1L["• Project Mgr<br/>• System Architect<br/>• Frontend Eng<br/>• Backend Eng<br/>• Integration Eng<br/>• QA Eng"]:::list
+    B1H[AGENTS]:::hdr --> B1L["• Project Mgr<br/>• System Architect<br/>• Frontend / Backend<br/>• Integration / QA<br/>• Security Eng"]:::list
     B2H[RULES]:::hdr --> B2L["• core<br/>• development‑workflow<br/>• runtime adapter (crewai, claude-agent-sdk, or cursor-sdk)"]:::list
   end
 
   subgraph P3[DELIVER]
     L1H[AGENTS]:::hdr --> L1L["• DevOps Eng"]:::list
-    L2H[RULES]:::hdr --> L2L["• delivery‑workflow<br/>(deploy, hosting, access)"]:::list
+    L2H[RULES]:::hdr --> L2L["• delivery‑workflow<br/>(deploy, CI, user guide)"]:::list
   end
 
   P1 --> P2 --> P3
@@ -97,17 +107,9 @@ flowchart LR
 
 - **Phase 1 (Define):** Product Manager persona (`@product-mgr`) conducts structured elicitation (recommended), optional MRD for commercial products, and PRD/user stories to standardize project scoping.
 
-- **Phase 2 (Build):** Multi‑agent execution by Project Manager, System Architect, Frontend Engineer, Backend Engineer, Integration Engineer, QA Engineer, and (recommended) Security Engineer, governed by core/development-workflow rules and the selected runtime adapter rule.
+- **Phase 2 (Build):** Multi‑agent execution by Project Manager, System Architect, Frontend Engineer, Backend Engineer, Integration Engineer, QA Engineer (unit + integration stages), and (recommended) Security Engineer, governed by core/development-workflow rules and the selected runtime adapter rule.
 
 - **Phase 3 (Deliver):** DevOps Engineer (`@devops.eng`) packages the validated MVP using the `delivery-workflow` rule; artifacts include `project-context/3.deliver/deploy.md` and optionally `user-guide.md`.
-
----
-
-## What AAMAD is not
-
-- AAMAD is not a programmatic runtime orchestrator for its own Define → Build → Deliver phases.
-- Runtime adapter selection does not change AAMAD phase orchestration; it only changes the runtime conventions used by Build-phase implementation personas.
-- Headless orchestration of AAMAD phases is out of scope for v0.5.0.
 
 ---
 
@@ -341,15 +343,28 @@ Inspect bundle contents: `aamad bundle-info --verbose` or `aamad bundle-info --i
 
 ---
 
+## Runtime adapters
+
+Use `AAMAD_TARGET_RUNTIME` to choose the runtime target for the generated multi-agent application in Phase 2:
+
+| Runtime | Status | Best fit |
+| :------ | :----- | :------- |
+| `crewai` | Default | Declarative task orchestration with YAML-first runtime configuration |
+| `claude-agent-sdk` | Supported | Agentic runtime harness with hooks, MCP, and session control |
+| `cursor-sdk` | Supported | TypeScript-first Cursor runtime integration with explicit tool/runtime contracts |
+
+---
+
 ## How to Use the Framework
 
-1. **Install** (recommended): `pip install aamad` then `aamad init --ide <cursor|claude-code>`
-2. **Select runtime target** for Phase 2 (for example `AAMAD_TARGET_RUNTIME=crewai`, `AAMAD_TARGET_RUNTIME=claude-agent-sdk`, or `AAMAD_TARGET_RUNTIME=cursor-sdk`).
-3. **Or clone** this repository and copy `.cursor/` and `project-context/` into your project.
+1. **Install** (recommended): `pip install aamad` then `aamad init --ide <cursor|claude-code|vscode>`
+2. **Optional project config:** copy `aamad.config.example.yml` → `aamad.config.yml` and set language, UI, testing, and security preferences.
+3. **Select runtime target** for Phase 2 (for example `AAMAD_TARGET_RUNTIME=crewai`, `AAMAD_TARGET_RUNTIME=claude-agent-sdk`, or `AAMAD_TARGET_RUNTIME=cursor-sdk`).
 4. Confirm your IDE has the full agent, prompt, and rule set.
-5. Follow `CHECKLIST.md` for the Define → Build → Deliver workflow.
+5. Follow `CHECKLIST.md` for the Define → Build → Deliver workflow (start Phase 1 with `*elicit-requirements` when the use case is specialized).
 6. Each agent persona executes its epic(s), producing markdown artifacts and code.
-7. Review, test, and launch the MVP, then iterate.
+7. Run `aamad validate --phase define|build|deliver` at phase gates to check required artifacts and Audit headings.
+8. Review, test, and launch the MVP. After code changes that drift from docs, use `.cursor/prompts/prompt-sync-docs` (Claude Code: `/sync-docs`) to resynchronize `project-context/`.
 
 ---
 
@@ -370,28 +385,31 @@ Phase 1 outputs are stored in `project-context/1.define/` and provide the founda
 
 ## Phase 2: Build Stage (Multi-Agent)
 
-Each role is embodied by an agent persona, defined in `.cursor/agents/` (Cursor) or `.claude/agents/` (Claude Code).  
+Each role is embodied by an agent persona, defined in `.cursor/agents/` (Cursor), `.claude/agents/` (Claude Code), or `.github/agents/` (VS Code).  
 Before implementation, set `AAMAD_TARGET_RUNTIME` to the target backend runtime (`crewai` default, `claude-agent-sdk` supported, `cursor-sdk` supported).
 Phase 2 is executed by running each epic in sequence after completing Phase 1:
 
 - **Architecture:** Generate solution architecture document (`sad.md`)
 - **Setup:** Scaffold environment, install dependencies, and document (`setup.md`)
 - **Frontend:** Build UI + placeholders, document (`frontend.md`)
-- **Backend:** Implement backend, document (`backend.md`)
+- **Backend:** Implement backend for the selected runtime, document (`backend.md`)
 - **Integration:** Wire up chat flow, verify, document (`integration.md`)
-- **Quality Assurance:** Test end-to-end, log results and limitations (`qa.md`)
+- **Quality Assurance:** Run `*test-unit` and `*test-integration`, then smoke/acceptance (`*qa`); map tests to acceptance-criteria IDs when present; log in `qa.md`
+- **Security (recommended):** `@security.eng` → `security.md` before Deliver (required when `aamad.config.yml` sets `security.require_security_assessment: true`)
 
 Artifacts are versioned and stored in `project-context/2.build` for traceability.
 
 ---
 
-## Core Concepts
+## Phase 3: Deliver Stage (DevOps)
 
-- **Persona-driven development:** Each workflow is owned and documented by a clear AI agent persona with a single responsibility principle.
-- **Context artifacts:** All major actions, decisions, and documentation are stored as markdown artifacts, ensuring explainability and reproducibility.
-- **Parallelizable epics:** Big tasks are broken into epics, making development faster and more autonomous while retaining control over quality.
-- **Reusability:** Framework reusable for any project—simply drop in your PRD/SAD and let the agents execute.
-- **Open, transparent, and community-driven:** All patterns and artifacts are readable, auditable, and extendable.
+After QA (and preferably security), invoke `@devops.eng`:
+
+- **Release readiness:** Confirm `qa.md` (and note `security.md` status)
+- **Deploy / CI:** Minimal deploy and pipeline config aligned with SAD and `AAMAD_TARGET_RUNTIME`
+- **Runbook:** `project-context/3.deliver/deploy.md` (hosting, env matrix, access, rollback)
+- **User docs:** `*document-user-guide` → `project-context/3.deliver/user-guide.md`
+- **Validate:** `aamad validate --phase deliver`
 
 ---
 
