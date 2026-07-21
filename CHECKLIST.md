@@ -45,7 +45,8 @@ This checklist guides you step-by-step through running AAMAD from Phase 1 (Defin
     - [ ] `*create-mrd` — Generate Market Research Document at project-context/1.define/mrd.md using .cursor/templates/mrd-template.md.
     - [ ] `*create-prd` — Generate Product Requirements Document at project-context/1.define/prd.md using .cursor/templates/prd-template.md.
     - [ ] `*create-context` — Generate both MRD and PRD with context summary for handoff.
-- [ ] Validate completeness: market analysis, user personas, feature requirements, success metrics, and business goals.
+    - [ ] `*create-stories` — Generate MVP user stories under project-context/1.define/user-stories/ using .cursor/templates/user-story-template.md.
+- [ ] Validate completeness: market analysis (when MRD produced), user personas, feature requirements, success metrics, and business goals.
 - [ ] Record assumptions and open questions in artifacts for downstream resolution.
 - [ ] Approve context boundaries and artifacts for technical build phase.
 

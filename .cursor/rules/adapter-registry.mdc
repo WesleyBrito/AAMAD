@@ -1,3 +1,4 @@
+---
 description: Registry and selection rules for choosing the runtime adapter used by AAMAD-generated multi-agent applications.
 globs:
 alwaysApply: true

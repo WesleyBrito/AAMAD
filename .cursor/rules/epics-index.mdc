@@ -7,6 +7,7 @@ alwaysApply: true
 
 | Epic         | Persona        | Primary Output Artifact | PRD/SAD Section Reference      | Invocation        |
 |--------------|---------------|------------------------|-------------------------------|-------------------|
+| Architecture | @system.arch   | sad.md                 | SAD: Views & Decisions, PRD: Tech Req | *create-sad |
 | Setup        | @project.mgr   | setup.md               | SAD: Environment, PRD: Setup   | *setup-project    |
 | Frontend     | @frontend.eng  | frontend.md            | SAD: MVP UI, PRD: UI Scope     | *develop-fe       |
 | Backend      | @backend.eng   | backend.md             | SAD: Crew Spec, PRD: Agent Def | *develop-be       |
