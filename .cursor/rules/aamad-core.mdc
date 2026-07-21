@@ -40,6 +40,13 @@ alwaysApply: true
 ## Failure Policy
 - On iteration/time limits or missing prerequisites, write a Halt and Report section with blockers; do not continue.
 
+## Project Configuration
+- When `aamad.config.yml` exists at the project root, all personas MUST load it at start and honor its preferences (language, libraries, UI, coding standards, security, documentation, testing).
+- Prefer `AAMAD_TARGET_RUNTIME` environment variable over `runtime.target` in the config when both are set; record the resolved value in Audit.
+- If config conflicts with PRD or SAD, do not silently override those artifacts — record the conflict under Open Questions and proceed with PRD/SAD as authoritative for scope.
+- Use `.cursor/templates/aamad-config-template.yml` / `aamad.config.example.yml` as the schema reference; unknown keys should be flagged by `aamad validate`.
+
 ## Security and Compliance
 - Never embed secrets in artifacts; use environment variables in runtime code only. Record third-party content in NOTICES as needed
 - Provide `.env.example` entries for required runtime secrets and keep secret values out of Prompt Trace and diagnostics.
+- Prefer a Security Assessment (`@security.eng` → `project-context/2.build/security.md`) before Deliver when `security.require_security_assessment` is true in `aamad.config.yml` or when the operator requests it.

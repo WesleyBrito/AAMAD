@@ -168,6 +168,16 @@ def test_convert_prompts_creates_command(tmpdir, sample_prompt):
     assert "Market Research" in cmd_file.read_text()
 
 
+def test_convert_prompts_creates_sync_docs(tmpdir):
+    """convert_prompts creates .claude/commands/sync-docs.md when source exists."""
+    prompts_dir = tmpdir / "prompts"
+    prompts_dir.mkdir()
+    (prompts_dir / "prompt-sync-docs").write_text("Synchronize project-context docs.")
+    out = convert_prompts(prompts_dir, tmpdir)
+    assert any(p.name == "sync-docs.md" for p in out)
+    assert (tmpdir / ".claude" / "commands" / "sync-docs.md").exists()
+
+
 def test_write_settings_creates_valid_json(tmpdir):
     """write_settings creates valid .claude/settings.json."""
     path = write_settings(tmpdir)
@@ -277,6 +287,26 @@ agent:
     out = convert_agents(agents_dir, tmpdir)
     assert len(out) == 1
     assert (tmpdir / ".claude" / "agents" / "devops-eng.md").exists()
+
+
+def test_convert_agents_includes_security_eng(tmpdir):
+    """convert_agents writes security-eng when source file exists."""
+    agents_dir = tmpdir / "agents"
+    agents_dir.mkdir()
+    (agents_dir / "security-eng.md").write_text(
+        """---
+agent:
+  name: Security Engineer
+  id: security-eng
+  role: Assess MVP security.
+---
+
+# Security
+"""
+    )
+    out = convert_agents(agents_dir, tmpdir)
+    assert len(out) == 1
+    assert (tmpdir / ".claude" / "agents" / "security-eng.md").exists()
 
 
 def test_install_claude_code_full(tmpdir):

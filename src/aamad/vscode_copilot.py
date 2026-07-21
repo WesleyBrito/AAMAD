@@ -34,6 +34,7 @@ AGENT_IDS = [
     "backend-eng",
     "integration-eng",
     "qa-eng",
+    "security-eng",
     "devops-eng",
 ]
 
@@ -41,7 +42,14 @@ AGENT_IDS = [
 DEFAULT_TOOLS = ["editFiles", "terminalLastCommand", "search", "codebase", "fetch"]
 
 # Agents that should not have 'fetch' (build personas)
-RESTRICT_FETCH_IDS = {"backend-eng", "frontend-eng", "integration-eng", "qa-eng", "project-mgr"}
+RESTRICT_FETCH_IDS = {
+    "backend-eng",
+    "frontend-eng",
+    "integration-eng",
+    "qa-eng",
+    "security-eng",
+    "project-mgr",
+}
 
 # Handoffs for Define → Build → Deliver (agent_id -> list of {label, agent, prompt, send})
 HANDOFFS: dict[str, list[dict[str, Any]]] = {
@@ -85,9 +93,23 @@ HANDOFFS: dict[str, list[dict[str, Any]]] = {
     ],
     "qa-eng": [
         {
+            "label": "→ Security Assessment",
+            "agent": "security-eng",
+            "prompt": "Assess MVP security risks using project-context/2.build/ artifacts and produce security.md.",
+            "send": False,
+        },
+        {
             "label": "→ Deliver MVP",
             "agent": "devops-eng",
             "prompt": "Prepare release and deploy configuration per project-context/2.build/qa.md and SAD.",
+            "send": False,
+        },
+    ],
+    "security-eng": [
+        {
+            "label": "→ Deliver MVP",
+            "agent": "devops-eng",
+            "prompt": "Prepare release after security.md; note any accepted risks in deploy.md.",
             "send": False,
         },
     ],
@@ -257,31 +279,47 @@ def convert_agents(cursor_agents_dir: Path, out_dir: Path) -> list[Path]:
     return created
 
 
+PROMPT_SPECS = {
+    "prompt-phase-1": {
+        "out": "phase-1-define.prompt.md",
+        "description": "AAMAD Phase 1: Generate Market Research and Product Requirements Document",
+        "agent": "product-mgr",
+    },
+    "prompt-sync-docs": {
+        "out": "sync-docs.prompt.md",
+        "description": "AAMAD maintenance: synchronize project-context docs with the codebase",
+        "agent": "project-mgr",
+    },
+}
+
+
 def convert_prompts(cursor_prompts_dir: Path, out_dir: Path) -> list[Path]:
     """
-    Convert Phase 1 prompt to .github/prompts/phase-1-define.prompt.md.
+    Convert Cursor prompts to .github/prompts/*.prompt.md.
 
     Adds optional frontmatter (description, agent) per guide §4.2 Step 3.
     """
     prompts_dir = out_dir / ".github" / "prompts"
     prompts_dir.mkdir(parents=True, exist_ok=True)
 
-    prompt_path = cursor_prompts_dir / "prompt-phase-1"
-    if not prompt_path.exists():
-        return []
-
-    body = prompt_path.read_text(encoding="utf-8")
-    frontmatter_lines = [
-        "---",
-        'description: "AAMAD Phase 1: Generate Market Research and Product Requirements Document"',
-        "agent: product-mgr",
-        "---",
-        "",
-    ]
-    content = "\n".join(frontmatter_lines) + body
-    out_path = prompts_dir / "phase-1-define.prompt.md"
-    out_path.write_text(content, encoding="utf-8")
-    return [out_path]
+    created: list[Path] = []
+    for src_name, spec in PROMPT_SPECS.items():
+        prompt_path = cursor_prompts_dir / src_name
+        if not prompt_path.exists():
+            continue
+        body = prompt_path.read_text(encoding="utf-8")
+        frontmatter_lines = [
+            "---",
+            f'description: "{spec["description"]}"',
+            f"agent: {spec['agent']}",
+            "---",
+            "",
+        ]
+        content = "\n".join(frontmatter_lines) + body
+        out_path = prompts_dir / spec["out"]
+        out_path.write_text(content, encoding="utf-8")
+        created.append(out_path)
+    return created
 
 
 # Keys we set for AAMAD (merge only these into existing settings)
@@ -328,7 +366,8 @@ def get_vscode_planned_paths(dest: Path) -> list[Path]:
         paths.append(dest / ".github" / "instructions" / f"{name}.instructions.md")
     for agent_id in AGENT_IDS:
         paths.append(dest / ".github" / "agents" / f"{agent_id}.agent.md")
-    paths.append(dest / ".github" / "prompts" / "phase-1-define.prompt.md")
+    for spec in PROMPT_SPECS.values():
+        paths.append(dest / ".github" / "prompts" / spec["out"])
     paths.append(dest / ".vscode" / "settings.json")
     return paths
 

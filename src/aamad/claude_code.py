@@ -34,6 +34,7 @@ AGENT_IDS = [
     "backend-eng",
     "integration-eng",
     "qa-eng",
+    "security-eng",
     "devops-eng",
 ]
 
@@ -41,7 +42,14 @@ AGENT_IDS = [
 DEFAULT_TOOLS = "Read, Edit, Write, Bash, Grep, Glob"
 
 # Agents that should not use WebFetch (build personas)
-DISALLOW_WEBFETCH_IDS = {"backend-eng", "frontend-eng", "integration-eng", "qa-eng", "project-mgr"}
+DISALLOW_WEBFETCH_IDS = {
+    "backend-eng",
+    "frontend-eng",
+    "integration-eng",
+    "qa-eng",
+    "security-eng",
+    "project-mgr",
+}
 
 
 def _parse_frontmatter(content: str) -> tuple[dict[str, Any], str]:
@@ -228,27 +236,34 @@ def convert_agents(
     return created
 
 
+PROMPT_COMMANDS = {
+    "prompt-phase-1": "phase-1-define.md",
+    "prompt-sync-docs": "sync-docs.md",
+}
+
+
 def convert_prompts(
     cursor_prompts_dir: Path,
     out_dir: Path,
 ) -> list[Path]:
     """
-    Convert Phase 1 prompt to Claude Code command.
+    Convert Cursor prompts to Claude Code slash commands.
 
-    Input: .cursor/prompts/prompt-phase-1 (no extension)
-    Output: .claude/commands/phase-1-define.md
+    Inputs: .cursor/prompts/prompt-* (no extension)
+    Outputs: .claude/commands/*.md
     """
     claude_commands = out_dir / ".claude" / "commands"
     claude_commands.mkdir(parents=True, exist_ok=True)
 
-    prompt_path = cursor_prompts_dir / "prompt-phase-1"
-    if not prompt_path.exists():
-        return []
-
-    content = prompt_path.read_text(encoding="utf-8")
-    out_path = claude_commands / "phase-1-define.md"
-    out_path.write_text(content, encoding="utf-8")
-    return [out_path]
+    created: list[Path] = []
+    for src_name, dest_name in PROMPT_COMMANDS.items():
+        prompt_path = cursor_prompts_dir / src_name
+        if not prompt_path.exists():
+            continue
+        out_path = claude_commands / dest_name
+        out_path.write_text(prompt_path.read_text(encoding="utf-8"), encoding="utf-8")
+        created.append(out_path)
+    return created
 
 
 def write_settings(out_dir: Path) -> Path:

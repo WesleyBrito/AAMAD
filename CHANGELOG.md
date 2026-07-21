@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.4] - 2026-07-20
+
+### Added
+
+- Structured requirements elicitation: `*elicit-requirements`, `system-description-template.md`, optional richer Phase 1 intake.
+- Optional MRD path for internal/personal projects (checklist + persona + prompt).
+- Explicit QA stages: `*test-unit` and `*test-integration` on `@qa.eng` with AC-* traceability.
+- Documentation sync prompt: `.cursor/prompts/prompt-sync-docs` (Claude `/sync-docs`, VS Code `sync-docs.prompt.md`) and CHECKLIST Maintenance section.
+- Security Engineer persona `@security.eng` → `project-context/2.build/security.md`, wired as recommended pre-Deliver gate.
+- User guide generation: `user-guide-template.md` and `*document-user-guide` on `@devops.eng`.
+- Project config: `aamad.config.example.yml` / template, core-rule Project Configuration section, `aamad validate` unknown-key checks.
+- README "Principles and benefits" section.
+
+### Changed
+
+- Claude Code and VS Code converters include `security-eng` and sync-docs prompts; VS Code handoffs are QA → Security → DevOps.
+- CHECKLIST, epics-index, delivery-workflow, and AGENTS.md updated for elicitation, security, and user docs.
+
 ## [0.7.3] - 2026-07-20
 
 ### Added

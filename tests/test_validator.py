@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -96,3 +95,24 @@ def test_mrd_optional_warns_only(project: Path) -> None:
     assert any(
         i.level == "warning" and i.path.endswith("mrd.md") for i in result.issues
     )
+
+
+def test_unknown_config_key_is_error(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    (project / "aamad.config.yml").write_text(
+        "version: 1\nnot_a_real_section: true\n", encoding="utf-8"
+    )
+    result = validate_project(project, phase="define")
+    assert not result.ok
+    assert any("Unknown top-level" in i.message for i in result.issues)
+
+
+def test_valid_config_passes(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    (project / "aamad.config.yml").write_text(
+        "version: 1\nruntime:\n  target: crewai\n", encoding="utf-8"
+    )
+    result = validate_project(project, phase="define")
+    assert result.ok, format_report(result)
