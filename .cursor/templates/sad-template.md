@@ -1,284 +1,173 @@
-# AAMAD MVP System Architecture Template - Phase 3 (Next.js + assistant-ui)
+# AAMAD MVP System Architecture Document (SAD) Template
 
 ## Context & Instructions
-Generate a comprehensive system architecture specification for a multi-agent system using CrewAI framework with a modern Next.js frontend and assistant-ui interface. 
-This document serves as a detailed blueprint for AI development agents to understand the complete system structure, requirements, and implementation approach for Phase 3 deployment.
+Generate a system architecture specification for a multi-agent MVP.
+Align agent and API design with the runtime selected via `AAMAD_TARGET_RUNTIME` (`crewai` | `claude-agent-sdk` | `cursor-sdk`) and the active adapter rule.
+Frontend stack defaults to a modern web chat UI when the PRD does not specify otherwise; do not hardcode a single vendor UI library as mandatory unless the PRD/SAD decisions require it.
+This document is the blueprint for Build-phase personas. Prefer lean MVP views; defer nonessential NFRs to Future Work.
 
-## Input Requirements:
-**PRD Document**: [PASTE YOUR COMPLETED PRD HERE]
-**MVP Scope**: Focus on core value proposition with 80/20 rule - 20% effort for 80% value
+## Input Requirements
+
+**PRD Document**: [REFERENCE `project-context/1.define/prd.md`]  
+**MRD** (optional): [REFERENCE `project-context/1.define/mrd.md` OR N/A]  
+**User Stories** (when present): [REFERENCE `project-context/1.define/user-stories/`]  
+**MVP Scope**: Focus on core value proposition (80/20)  
 **Selected Runtime**: [crewai | claude-agent-sdk | cursor-sdk]
 
-## System Architecture Specification - Generate All Sections:
+## System Architecture Specification — Generate All Sections
 
 ### 1. MVP Architecture Philosophy & Principles
 
 **MVP Design Principles**:
-- **Customer Feedback First**: Deploy quickly to validate core value proposition
-- **Modern LLM Interface**: Use assistant-ui for production-grade AI chat experience
-- **Automated Deployment**: CI/CD from day 1 to enable rapid iteration
-- **Observable by Default**: Basic monitoring to understand user behavior
 
-**Core vs. Future Features Decision Framework**:
-- **Phase 3 Beta (MVP)**: Core agent functionality, assistant-ui interface, essential integrations
-- **Phase 3 Full**: Advanced features, enterprise security, horizontal scaling
-- **Validation Focus**: Prove product-market fit before scaling complexity
+- Customer / operator feedback first  
+- Minimal viable agent set and simplest orchestration that delivers core value  
+- Observable by default (basic logging / health)  
+- Automated deploy scaffolding from day 1 when Deliver phase is in scope
+
+**Core vs Future Features**:
+
+- **MVP**: Core agent functionality, chat (or primary) interface, essential integrations only  
+- **Future**: Advanced features, enterprise security, horizontal scaling  
+- Explicit exclusions and deferrals
 
 **Technical Architecture Decisions**:
-- Justify why Next.js App Router over Pages Router
-- Explain assistant-ui selection over custom chat interface
-- Define CrewAI agent communication patterns
-- Specify real-time streaming requirements
+
+- Justify frontend framework choice (e.g. Next.js App Router when selected)  
+- Justify UI approach for human-agent interaction  
+- Define runtime-specific agent communication patterns  
+- Specify streaming vs non-streaming requirements
 
 ### 2. Multi-Agent System Specification
 
 **Agent Architecture Requirements**:
-- Define 3-4 specialized agents maximum for MVP scope
-- Specify agent roles, goals, and backstories from PRD analysis
-- Detail agent collaboration patterns (sequential vs parallel processing)
-- Define memory management requirements (short-term vs long-term)
-- Specify tool integration needs for each agent
 
-**Task Orchestration Specification**:
-- Define task dependencies and execution flow
-- Specify expected outputs and data formats for each task
-- Detail context passing between agents
-- Define error handling and retry mechanisms
-- Specify performance requirements (max execution time, token limits)
+- Define 3–4 specialized agents maximum for MVP  
+- Specify roles, goals, and collaboration patterns from PRD  
+- Memory / session requirements (default: none or short-lived for reproducibility)  
+- Tool / MCP integration needs per agent (least privilege)
 
-**CrewAI Framework Configuration**:
-- Specify crew composition and process type
-- Define memory and caching requirements
-- Detail verbose logging needs for debugging
-- Specify integration points with Next.js API routes
+**Task / Turn Orchestration**:
 
-### 3. Frontend Architecture Specification (Next.js + assistant-ui)
+- Dependencies and execution flow  
+- Expected outputs and data formats  
+- Context passing between agents  
+- Error handling, retries, cancellation / timeout behavior  
+- Performance budgets (max execution time, token / turn limits)
 
-**Technology Stack Requirements**:
-- **Framework**: Next.js 14+ with App Router for modern React patterns
-- **UI Library**: assistant-ui for LLM interface + shadcn/ui for components
-- **Styling**: Tailwind CSS for rapid development and consistency
-- **Type Safety**: TypeScript throughout frontend and backend
-- **State Management**: Zustand for client-side state management
+**Runtime-Conditional Configuration** (fill the subsection matching Selected Runtime):
 
-**Application Structure Requirements**:
-- Define App Router directory structure and page organization
-- Specify API route organization for CrewAI integration
-- Detail component architecture for reusable UI elements
-- Define custom assistant-ui component requirements
-- Specify layout and navigation structure
+- **crewai**: crew composition, process type, YAML agent/task config, `max_iter`, task context chaining  
+- **claude-agent-sdk**: coordinator + `AgentDefinition` specialists, hooks, `allowed_tools`, session policy  
+- **cursor-sdk**: TypeScript/Node runtime roles, tool contracts, streaming/event envelopes, budget controls
 
-**assistant-ui Integration Specifications**:
-- Define custom tool components for agent result display
-- Specify streaming message handling for real-time updates
-- Detail user interaction patterns and conversation flow
-- Define feedback collection integration within chat interface
-- Specify theming and customization requirements
+### 3. Frontend Architecture Specification
 
-**User Interface Requirements**:
-- Specify main chat interface layout and functionality
-- Define dashboard requirements for analytics display
-- Detail responsive design requirements for mobile/desktop
-- Specify accessibility requirements and ARIA compliance
-- Define loading states and error handling UI patterns
+**Technology Stack** (from PRD or justified defaults):
+
+- Framework, UI library, styling, type safety, state management
+
+**Application Structure**:
+
+- Route / page organization  
+- API client boundaries (no backend wiring in FE epic)  
+- Component architecture and responsive / accessibility requirements
+
+**Interface Requirements**:
+
+- Primary chat or interaction surface  
+- Loading / error states  
+- Placeholders for Future Work features
 
 ### 4. Backend Architecture Specification
 
-**API Architecture Requirements**:
-- Define Next.js API routes for CrewAI agent communication
-- Specify streaming response handling for real-time updates
-- Detail request/response data structures and validation
-- Define rate limiting and security middleware requirements
-- Specify error handling and logging patterns
+**API Architecture**:
 
-**Database Architecture Specification**:
-- Define data models for conversation history and analytics
-- Specify database technology (SQLite for MVP, PostgreSQL path)
-- Detail migration strategy and schema management
-- Define data retention and cleanup policies
-- Specify backup and recovery requirements
+- Chat (or primary) endpoint contract: request schema, response schema, streaming/event envelope  
+- Validation, rate limiting, error envelope shape  
+- Alignment with the selected runtime adapter
 
-**CrewAI Integration Layer Requirements**:
-- Define Python service layer for agent orchestration
-- Specify agent configuration management and versioning
-- Detail tool integration patterns and custom tool development
-- Define monitoring and logging for agent performance
-- Specify error handling and graceful degradation
+**Data Architecture** (MVP default: none unless PRD requires):
 
-**Authentication & Security Specifications**:
-- Define user authentication requirements (NextAuth.js integration)
-- Specify API key management and environment variable handling
-- Detail input validation and sanitization requirements
-- Define rate limiting policies and implementation approach
-- Specify CORS and security header configuration
+- Explicitly defer persistence when out of MVP; if included, justify minimal store
+
+**Runtime Integration Layer**:
+
+- How the HTTP/API layer invokes the selected runtime  
+- Agent configuration management  
+- Logging / Prompt Trace hooks per adapter Quality Gates
+
+**Authentication & Secrets**:
+
+- Env-var names only (from `.env.example`); no secret values in artifacts
 
 ### 5. DevOps & Deployment Architecture
 
-**CI/CD Pipeline Requirements**:
-- Define GitHub Actions workflow for automated deployment
-- Specify build process for Next.js application optimization
-- Detail testing requirements (unit, integration, E2E)
-- Define deployment gates and approval processes
-- Specify rollback procedures and blue-green deployment
-
-**AWS App Runner Configuration Specification**:
-- Define compute and memory requirements for MVP scale
-- Specify auto-scaling policies and performance targets
-- Detail health check endpoints and monitoring requirements
-- Define environment variable management and secrets
-- Specify networking and security group configuration
-
-**Infrastructure as Code Requirements**:
-- Define Terraform or CloudFormation template structure
-- Specify resource provisioning and configuration management
-- Detail backup and disaster recovery procedures
-- Define cost optimization and resource monitoring
-- Specify staging and production environment separation
-
-**Monitoring & Observability Specifications**:
-- Define application performance monitoring requirements
-- Specify log aggregation and analysis for debugging
-- Detail user behavior tracking and analytics collection
-- Define alerting rules and notification systems
-- Specify dashboard requirements for operational visibility
+**CI/CD** (minimal MVP): lint, test, build  
+**Hosting**: smallest MVP-appropriate target; health-check endpoint  
+**IaC / multi-region / advanced monitoring**: Future Work unless PRD requires  
+**Observability**: baseline logs and health; advanced APM deferred unless scoped
 
 ### 6. Data Flow & Integration Architecture
 
-**Request/Response Flow Specification**:
-- Define user request processing through assistant-ui
-- Specify data transformation between frontend and CrewAI
-- Detail streaming response handling and real-time updates
-- Define error propagation and user feedback mechanisms
-- Specify caching strategies for performance optimization
-
-**External Integration Requirements**:
-- Define API integrations needed for agent tools
-- Specify data source connections and authentication
-- Detail third-party service error handling and fallbacks
-- Define webhook requirements for real-time data updates
-- Specify data synchronization and consistency requirements
-
-**Analytics & Feedback Architecture**:
-- Define user interaction tracking and event collection
-- Specify feedback data models and storage requirements
-- Detail analytics processing and insight generation
-- Define privacy compliance and data anonymization
-- Specify real-time dashboard update mechanisms
+- Request/response path from UI through API to runtime agents  
+- External tool/API integrations required for MVP only  
+- Error propagation and user-visible feedback
 
 ### 7. Performance & Scalability Specifications
 
-**Performance Requirements**:
-- Define response time targets for different operation types
-- Specify concurrent user capacity and load handling
-- Detail database query optimization requirements
-- Define caching strategies for frequently accessed data
-- Specify CDN requirements for static asset delivery
-
-**Scalability Architecture**:
-- Define horizontal scaling triggers and policies
-- Specify load balancing requirements and strategies
-- Detail database scaling path (read replicas, sharding)
-- Define microservice separation points for future growth
-- Specify container orchestration requirements
-
-**Resource Optimization Specifications**:
-- Define memory and CPU utilization targets
-- Specify token usage optimization for LLM calls
-- Detail bandwidth optimization for real-time features
-- Define storage optimization and data archival policies
-- Specify cost monitoring and budget alerting
+- Response-time and concurrency targets for MVP  
+- Scaling path deferred with rationale  
+- Token / cost controls at runtime layer
 
 ### 8. Security & Compliance Architecture
 
-**Security Framework Requirements**:
-- Define authentication and authorization implementation
-- Specify data encryption requirements (at rest and in transit)
-- Detail API security and input validation standards
-- Define security scanning and vulnerability management
-- Specify incident response and security monitoring
-
-**Data Privacy & Compliance**:
-- Define user data handling and privacy protection
-- Specify GDPR compliance requirements and implementation
-- Detail data retention and deletion policies
-- Define audit logging and compliance reporting
-- Specify user consent management and preferences
+- AuthN/AuthZ for MVP  
+- Encryption and input validation baselines  
+- Compliance deferred with explicit Open Questions when unknown
 
 ### 9. Testing & Quality Assurance Specifications
 
-**Testing Strategy Requirements**:
-- Define unit testing coverage requirements and standards
-- Specify integration testing for API and database layers
-- Detail end-to-end testing for complete user workflows
-- Define performance testing and load testing requirements
-- Specify security testing and vulnerability assessments
-
-**Quality Gates & Validation**:
-- Define code quality standards and automated checks
-- Specify deployment validation and smoke testing
-- Detail user acceptance testing criteria and procedures
-- Define performance benchmarks and acceptance criteria
-- Specify accessibility testing and compliance validation
+- Unit, integration, and smoke/acceptance expectations for MVP  
+- Runtime-specific checks (task outputs, hook traces, schema validation)  
+- Security assessment recommended before Deliver
 
 ### 10. MVP Launch & Feedback Strategy
 
-**Beta Testing Framework**:
-- Define beta user selection criteria and onboarding
-- Specify feedback collection mechanisms and analysis
-- Detail feature flag implementation for gradual rollout
-- Define success metrics and measurement procedures
-- Specify iteration cycles and improvement prioritization
+- Beta / pilot criteria when applicable  
+- Success metrics tied to PRD KPIs  
+- Iteration priorities after first deploy
 
-**User Experience Optimization**:
-- Define user onboarding flow and tutorial requirements
-- Specify help system and documentation integration
-- Detail user feedback loop and feature request handling
-- Define user retention strategies and engagement tracking
-- Specify customer support integration and escalation
+## Implementation Guidance for AI Development Agents
 
-**Business Metrics & Analytics**:
-- Define key performance indicators and tracking implementation
-- Specify revenue tracking and conversion funnel analysis
-- Detail user engagement metrics and behavior analysis
-- Define competitive analysis and market feedback integration
-- Specify business intelligence dashboard requirements
+1. Foundation setup per `setup.md` epic  
+2. Frontend MVP UI without backend wiring  
+3. Backend runtime scaffolding per adapter rule  
+4. Integration epic wires FE ↔ BE  
+5. QA validates unit, integration, and smoke paths  
+6. Deliver packages deploy/CI/runbook only
 
-## Implementation Guidance for AI Development Agents:
+## Architecture Validation Checklist
 
-### **Phase 2 Development Priorities**:
-1. **Foundation Setup**: Next.js project structure with TypeScript and Tailwind
-2. **assistant-ui Integration**: Chat interface with streaming and tool components
-3. **CrewAI Backend**: Python service layer with agent configuration
-4. **API Layer**: Next.js API routes connecting frontend to CrewAI
-5. **Database Setup**: Prisma with SQLite for development
-6. **Authentication**: NextAuth.js integration for user management
-7. **Testing Framework**: Jest and Playwright setup with initial test suites
-8. **CI/CD Pipeline**: GitHub Actions with AWS App Runner deployment
+- [ ] PRD requirements mapped to architectural components  
+- [ ] Agents designed for the domain and selected runtime  
+- [ ] Frontend and backend contracts agree on schemas / streaming  
+- [ ] Secrets via env vars only  
+- [ ] MVP vs Future Work boundaries explicit  
+- [ ] Resolved `AAMAD_TARGET_RUNTIME` recorded in Audit
 
-### **Critical Architecture Decisions to Implement**:
-- Choose between Server Components and Client Components appropriately
-- Implement proper error boundaries and fallback UI components
-- Design database schema with future scalability considerations
-- Structure API routes for optimal performance and maintainability
-- Configure assistant-ui for optimal LLM interaction patterns
-- Implement proper TypeScript types for end-to-end type safety
+## Sources
 
-### **MVP Scope Boundaries**:
-- Focus on core content marketing workflow (research → strategy → planning)
-- Limit to single-user sessions without complex user management
-- Implement basic analytics without advanced business intelligence
-- Use SQLite for simplicity while designing for PostgreSQL migration
-- Implement essential security without enterprise-grade features
+- PRD, MRD (if any), user stories, adapter rule path
 
-## Architecture Validation Checklist:
-- [ ] All PRD requirements mapped to architectural components
-- [ ] CrewAI agents properly designed for content marketing domain
-- [ ] assistant-ui integration supports required user interaction patterns
-- [ ] Next.js architecture optimized for performance and SEO
-- [ ] Database schema supports required queries and future scaling
-- [ ] API design follows RESTful principles with proper error handling
-- [ ] Security measures appropriate for MVP while planning enterprise upgrade
-- [ ] CI/CD pipeline supports rapid iteration and reliable deployment
-- [ ] Monitoring and analytics provide actionable insights for improvement
-- [ ] Architecture supports transition from MVP to full production system
+## Assumptions
 
+- Stack defaults chosen when PRD was silent; list them explicitly
+
+## Open Questions
+
+- Unresolved NFR, hosting, or compliance items
+
+## Audit
+
+- Timestamp, persona id (`system-arch`), action (`create-sad` or `create-sad --mvp`), resolved `AAMAD_TARGET_RUNTIME`
