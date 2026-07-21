@@ -1,138 +1,132 @@
 # AAMAD PRD Generation Template
 
-
 ## Context & Instructions
-Generate a comprehensive Product Requirements Document (PRD) for a multi-agent system using CrewAI framework. 
-Base all decisions and requirements on the provided Deep Research findings. 
-Ensure the PRD is production-ready and addresses real market needs identified in the research.
+Generate a comprehensive Product Requirements Document (PRD) for a multi-agent system.
+Base decisions on the provided Deep Research / MRD findings when present, or on a system description / elicitation notes when MRD was skipped.
+Ensure the PRD is production-ready for MVP scope and addresses real needs identified in the inputs.
+The selected runtime (`AAMAD_TARGET_RUNTIME`) constrains Phase 2 implementation conventions; do not hardcode a single runtime framework as the product definition.
 
-## Input Requirements:
+## Input Requirements
 
-**Deep Research Report**: \[PASTE YOUR COMPLETED DEEP RESEARCH REPORT HERE\]  
-**System Concept**: \[INSERT YOUR MULTI-AGENT SYSTEM DESCRIPTION\]
-**Selected Runtime**: \[crewai | claude-agent-sdk | cursor-sdk\]
+**Deep Research Report / MRD**: [PASTE OR REFERENCE `project-context/1.define/mrd.md` — or mark N/A if skipped]  
+**System Description** (optional): [REFERENCE `project-context/1.define/system-description.md` IF PRESENT]  
+**System Concept**: [INSERT YOUR MULTI-AGENT SYSTEM DESCRIPTION]  
+**Selected Runtime**: [crewai | claude-agent-sdk | cursor-sdk]
 
-## PRD Structure \- Generate All Sections Below:
+## PRD Structure — Generate All Sections Below
 
-### 1\. Executive Summary
+### 1. Executive Summary
 
-**Problem Statement** (Research-backed):
+**Problem Statement** (Research-backed when MRD exists):
 
-* Specific customer problem identified in market analysis  
-* Quantified impact and pain points from research data  
-* Target market size and opportunity scope
+* Specific customer or operator problem  
+* Quantified impact and pain points  
+* Target market or user population scope (N/A with rationale if internal tool)
 
 **Solution Overview** (Evidence-based):
 
 * Multi-agent system approach and unique value proposition  
-* Key differentiators vs competitive solutions from research  
-* Expected business outcomes and success metrics
+* Key differentiators vs alternatives  
+* Expected business or operational outcomes and success metrics
 
 **Strategic Rationale**:
 
 * Why multi-agent architecture is optimal for this problem  
-* Business case and ROI projections from research findings  
-* Market timing and competitive positioning
+* Business case / ROI or operational value  
+* Market timing and competitive positioning (or N/A for internal tools)
 
-### 2\. Market Context & User Analysis
+### 2. Market Context & User Analysis
 
-**Target Market** (From Research):
+**Target Market / Users** (From Research or System Description):
 
 * Primary user personas with detailed characteristics  
-* Market segment size and growth projections  
-* Geographic focus and expansion opportunities
+* Market segment size and growth projections (or N/A)  
+* Geographic focus and expansion opportunities (or N/A)
 
 **User Needs Analysis**:
 
-* Critical pain points and unmet needs from research  
+* Critical pain points and unmet needs  
 * User journey mapping and interaction patterns  
-* Adoption barriers and success factors identified
+* Adoption barriers and success factors
 
-**Competitive Landscape**:
+**Competitive Landscape** (optional when MRD skipped):
 
-* Direct and indirect competitors from research analysis  
+* Direct and indirect competitors or alternative workflows  
 * Feature gaps and differentiation opportunities  
-* Pricing benchmarks and market positioning
+* Pricing benchmarks when relevant
 
-### 3\. Technical Requirements & Architecture
+### 3. Technical Requirements & Architecture
 
-**CrewAI Framework Specifications**:
+**Runtime & Agent Specifications** (aligned with Selected Runtime):
 
 * Agent roles and responsibilities (based on workflow analysis)  
-* Crew composition and collaboration patterns  
-* Task orchestration and delegation hierarchy
+* Collaboration patterns (sequential, hierarchical, or harness-specific)  
+* Task / turn orchestration and delegation boundaries  
+* Example (CrewAI-style fields when runtime is `crewai`): role, goal, backstory, tools, memory, delegation — adapt field names for other runtimes per the active adapter rule
 
-**Core Agent Definitions**:   
-Example based on research findings
+**Core Agent Definitions**:
 
-* agent: \[agent\_name\]   
-* role: "\[specific role from user journey analysis\]"   
-* goal: "\[goal derived from user needs research\]"   
-* backstory: "\[context from domain research\]"   
-* tools: \[list\_of\_required\_tools\]   
-* memory: \[memory\_requirements\]  
-* delegation: \[delegation\_capabilities\]
+* agent: [agent_name]  
+* role: "[specific role from user journey analysis]"  
+* goal: "[goal derived from user needs]"  
+* tools: [list_of_required_tools]  
+* runtime notes: [adapter-specific controls, e.g. max_iter, hooks, allowed_tools]
 
-**Integration Requirements** (From Technical Analysis):
+**Integration Requirements**:
 
 * Required APIs and external services  
-* Database and storage specifications  
+* Database and storage specifications (MVP vs deferred)  
 * Authentication and security requirements  
 * Performance and scalability targets
 
 **Infrastructure Specifications**:
 
-* Cloud platform requirements (AWS/Azure/GCP)  
+* Cloud / hosting requirements for MVP  
 * Compute and memory specifications  
 * Network and security architecture  
 * Monitoring and logging requirements
 
-### 4\. Functional Requirements
+### 4. Functional Requirements
 
-**Core Features** (Priority P0): Based on critical user needs from research:
+**Core Features** (Priority P0):
 
-* \[Feature 1\]: User story format with acceptance criteria  
-* \[Feature 2\]: Technical specifications and constraints  
-* \[Feature 3\]: Integration requirements and dependencies
+* [Feature 1]: User story format with acceptance criteria  
+* [Feature 2]: Technical specifications and constraints  
+* [Feature 3]: Integration requirements and dependencies
 
-**Enhanced Features** (Priority P1): Based on competitive analysis and user preferences:
+**Enhanced Features** (Priority P1):
 
-* \[Feature 4\]: Advanced capabilities for differentiation  
-* \[Feature 5\]: Scalability and performance enhancements  
-* \[Feature 6\]: User experience improvements
+* Deferred unless justified for MVP
 
-**Future Features** (Priority P2): Based on emerging trends and innovation opportunities:
+**Future Features** (Priority P2):
 
-* \[Feature 7\]: Next-generation capabilities  
-* \[Feature 8\]: Integration with emerging technologies  
-* \[Feature 9\]: Advanced analytics and insights
+* Explicit Future Work list
 
-### 5\. Non-Functional Requirements
+### 5. Non-Functional Requirements
 
 **Performance Requirements**:
 
-* Response time targets (based on user experience research)  
+* Response time targets  
 * Throughput and concurrency specifications  
-* Availability and uptime requirements (99.9%+)
+* Availability and uptime requirements
 
 **Security & Compliance**:
 
 * Data protection and privacy requirements  
 * Access control and authentication specifications  
-* Regulatory compliance needs (GDPR, SOC2, etc.)
+* Regulatory compliance needs when applicable
 
 **Scalability & Reliability**:
 
-* Auto-scaling requirements and triggers  
-* Fault tolerance and recovery procedures  
-* Load balancing and performance optimization
+* Scaling triggers (MVP: document deferred approach)  
+* Fault tolerance and recovery procedures
 
-### 6\. User Experience Design
+### 6. User Experience Design
 
 **Interface Requirements**:
 
-* User interaction patterns from research  
-* Mobile and web platform specifications  
+* User interaction patterns  
+* Web / mobile platform specifications  
 * Accessibility and usability standards
 
 **Agent Interaction Design**:
@@ -141,13 +135,11 @@ Example based on research findings
 * Feedback and error handling approaches  
 * Transparency and explainability features
 
-### 7\. Success Metrics & KPIs
+### 7. Success Metrics & KPIs
 
-**Business Metrics** (From Market Research):
+**Business / Operational Metrics**:
 
-* Revenue targets and conversion rates  
-* User acquisition and retention goals  
-* Market share and competitive benchmarks
+* Targets aligned with problem statement
 
 **Technical Metrics**:
 
@@ -157,72 +149,42 @@ Example based on research findings
 
 **User Experience Metrics**:
 
-* User satisfaction and NPS scores  
-* Task completion rates and time-to-value  
-* Support ticket volume and resolution time
+* Satisfaction, task completion, time-to-value
 
-### 8\. Implementation Strategy
+### 8. Implementation Strategy
 
-**Development Phases**:  
-Phase 1 (MVP):
+**Development Phases**:
 
-* Core agent functionality and basic workflows  
-* Essential integrations and security features  
-* Basic user interface and monitoring
+* Phase 1 (Define): MRD (optional), PRD, SAD  
+* Phase 2 (Build): Setup → FE/BE → Integration → QA  
+* Phase 3 (Deliver): Deploy configs and runbook
 
-Phase 2 (Enhanced):
+**Resource Requirements** and **Risk Mitigation**: document realistically for MVP
 
-* Advanced agent capabilities and automation  
-* Full integration suite and advanced features  
-* Production-grade security and compliance
+### 9. Launch & Go-to-Market Strategy
 
-Phase 3 (Scale):
+Optional for internal tools — if skipped, state N/A under Assumptions.
 
-* AI/ML optimization and advanced analytics  
-* Enterprise features and custom integrations  
-* Global scaling and performance optimization
+## Quality Assurance Checklist
 
-**Resource Requirements**:
+- [ ] Requirements traceable to MRD, system description, or recorded Assumptions  
+- [ ] Technical specifications feasible with the selected runtime adapter  
+- [ ] Success metrics aligned with stated objectives  
+- [ ] MVP vs Future Work boundaries explicit  
+- [ ] Market sections marked N/A when MRD was intentionally skipped
 
-* Development team composition and skills  
-* Infrastructure and technology investments  
-* Third-party services and licensing costs
+## Sources
 
-**Risk Mitigation**:
+- MRD / system-description / stakeholder inputs used
 
-* Technical risks and mitigation strategies  
-* Market risks and contingency plans  
-* Operational risks and business continuity
+## Assumptions
 
-### 9\. Launch & Go-to-Market Strategy
+- Gaps filled by inference; MRD-skip rationale when applicable
 
-**Beta Testing Plan**:
+## Open Questions
 
-* Target beta user segments and criteria  
-* Testing scenarios and success metrics  
-* Feedback collection and iteration process
+- Unresolved items for architect or stakeholder resolution
 
-**Market Launch Strategy**:
+## Audit
 
-* Target customer segments and channels  
-* Pricing strategy and revenue model  
-* Marketing and sales approach
-
-**Success Criteria**:
-
-* Launch metrics and benchmarks  
-* Post-launch optimization priorities  
-* Long-term growth targets and milestones
-
-## 
-
-## Quality Assurance Checklist:
-
-- [ ] All requirements traceable to research findings  
-- [ ] Technical specifications feasible with CrewAI  
-- [ ] Success metrics aligned with business objectives  
-- [ ] Resource requirements realistic and justified  
-- [ ] Risk mitigation comprehensive and actionable  
-- [ ] Timeline achievable with defined milestones  
-      
-
+- Timestamp, persona id (`product-mgr`), action (`create-prd` or `create-context`), resolved `AAMAD_TARGET_RUNTIME`
