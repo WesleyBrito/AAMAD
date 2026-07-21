@@ -30,13 +30,14 @@ See the full agent definitions in the IDE-specific directories.
 - **@frontend.eng** — Frontend Developer: Builds MVP chat interface
 - **@backend.eng** — Backend Developer: Builds backend for the selected runtime
 - **@integration.eng** — Integration Engineer: Connects frontend and backend
-- **@qa.eng** — QA Engineer: Validates MVP functionality
-- **@devops.eng** — DevOps Engineer: Packages deploy/CI and delivery runbook
+- **@qa.eng** — QA Engineer: Validates MVP functionality (unit + integration)
+- **@security.eng** — Security Engineer: Assesses MVP security before Deliver
+- **@devops.eng** — DevOps Engineer: Packages deploy/CI, runbook, and user guide
 
 ## Workflow
-1. **Define** (Phase 1): @product-mgr → Market Research (optional) → PRD → @system.arch → SAD
-2. **Build** (Phase 2): @project.mgr → @frontend.eng / @backend.eng → @integration.eng → @qa.eng
-3. **Deliver** (Phase 3): @devops.eng → deploy.md
+1. **Define** (Phase 1): @product-mgr → elicitation → Market Research (optional) → PRD → @system.arch → SAD
+2. **Build** (Phase 2): @project.mgr → @frontend.eng / @backend.eng → @integration.eng → @qa.eng → @security.eng
+3. **Deliver** (Phase 3): @devops.eng → deploy.md + user-guide.md
 
 ## Rules
 All development follows AAMAD core rules. See project-context/ for artifacts.

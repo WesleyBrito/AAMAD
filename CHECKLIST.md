@@ -1,6 +1,6 @@
 # AAMAD Execution Checklist
 
-This checklist guides you step-by-step through running AAMAD from Phase 1 (Define) through Phase 2 (Build), using the agentic workflows defined in the framework.  
+This checklist guides you step-by-step through running AAMAD from Phase 1 (Define) through Phase 2 (Build) and Phase 3 (Deliver), using the agentic workflows defined in the framework.  
 **Artifacts** (`project-context/`, templates, Phase 1 prompt) are the same in every IDE; **where agents and rules live** depends on how you initialized AAMAD.
 
 ---
@@ -23,6 +23,7 @@ This checklist guides you step-by-step through running AAMAD from Phase 1 (Defin
   - [ ] **Claude Code:** `.claude/` (`agents/`, `rules/`, `commands/`, `settings.json`), `.cursor/templates/`, `AGENTS.md`
   - [ ] **VS Code + Copilot:** `.github/instructions/`, `.github/agents/`, `.github/prompts/`, `.vscode/settings.json`, `.cursor/templates/`, `AGENTS.md`
 
+- [ ] Optionally copy `aamad.config.example.yml` → `aamad.config.yml` and set project preferences.
 - [ ] Skim root `AGENTS.md` so you know where personas live for your IDE.
 - [ ] To **invoke personas** (`@product-mgr`, `@backend.eng`, …) and reference files, follow [README.md → Using AAMAD in your IDE](README.md#using-aamad-in-your-ide) (Cursor vs Claude Code vs VS Code differ).
 
@@ -41,12 +42,17 @@ This checklist guides you step-by-step through running AAMAD from Phase 1 (Defin
 ## Phase 1: Requirements Definition (`@product-mgr`)
 
 - [ ] Invoke `@product-mgr` using your IDE’s agent chat (see **Install and IDE layout** and README → Using AAMAD in your IDE).
-- [ ] Run one of:
-    - [ ] `*create-mrd` — Generate Market Research Document at project-context/1.define/mrd.md using .cursor/templates/mrd-template.md.
-    - [ ] `*create-prd` — Generate Product Requirements Document at project-context/1.define/prd.md using .cursor/templates/prd-template.md.
-    - [ ] `*create-context` — Generate both MRD and PRD with context summary for handoff.
-    - [ ] `*create-stories` — Generate MVP user stories under project-context/1.define/user-stories/ using .cursor/templates/user-story-template.md.
-- [ ] Validate completeness: market analysis (when MRD produced), user personas, feature requirements, success metrics, and business goals.
+- [ ] **Recommended for specialized projects:** run `*elicit-requirements` (or author `system-description.md` yourself) before MRD/PRD.
+- [ ] **MRD decision:**
+  - [ ] Commercial / market-facing product → produce MRD
+  - [ ] Internal / personal / operational tool → skip MRD; note rationale in PRD Assumptions
+- [ ] Run as needed:
+    - [ ] `*elicit-requirements` — System description at project-context/1.define/system-description.md
+    - [ ] `*create-mrd` — Market Research Document at project-context/1.define/mrd.md using .cursor/templates/mrd-template.md
+    - [ ] `*create-prd` — Product Requirements Document at project-context/1.define/prd.md using .cursor/templates/prd-template.md
+    - [ ] `*create-context` — MRD (unless skipped) and PRD with context summary for handoff
+    - [ ] `*create-stories` — MVP user stories under project-context/1.define/user-stories/
+- [ ] Validate completeness: market analysis (when MRD produced), user personas, feature requirements, acceptance criteria, success metrics, and business/operational goals.
 - [ ] Record assumptions and open questions in artifacts for downstream resolution.
 - [ ] Approve context boundaries and artifacts for technical build phase.
 
@@ -55,11 +61,13 @@ This checklist guides you step-by-step through running AAMAD from Phase 1 (Defin
 ## Before Phase 2 Starts
 
 - [ ] Ensure `project-context/1.define` includes:
-  - [ ] mrd.md (MRD)
-  - [ ] prd.md (PRD)
+  - [ ] prd.md (PRD) — **required**
+  - [ ] mrd.md (MRD) — **optional** (required only for commercial/market-facing projects)
+  - [ ] system-description.md — recommended when elicitation was used
   - [ ] sad.md (SAD, after architecture step)
 - [ ] Confirm framework layout from **Install and IDE layout** is still present (re-run `aamad init` with `--overwrite` only if you intend to refresh generated files).
 - [ ] Confirm `AAMAD_TARGET_RUNTIME` is set to your chosen runtime (see **Runtime target** above).
+- [ ] Optionally run `aamad validate --phase define`.
 
 ---
 
@@ -93,7 +101,7 @@ Use the same persona invocation pattern as Phase 1 (Cursor `@name`, Claude Code 
 
 - [ ] Invoke `@frontend.eng`.
 - [ ] Run `*develop-fe`
-  - [ ] Implement MVP chat interface (Next.js, assistant-ui)
+  - [ ] Implement MVP chat interface (or PRD-specified UI)
   - [ ] Add UI stubs for future planned features
   - [ ] Style and make the interface responsive
   - [ ] Document all decisions and status in frontend.md
@@ -124,24 +132,39 @@ Use the same persona invocation pattern as Phase 1 (Cursor `@name`, Claude Code 
 ### Step 5: Quality Assurance (`@qa.eng`)
 
 - [ ] Invoke `@qa.eng`.
-- [ ] Run `*qa`
+- [ ] Run `*test-unit` — unit tests; map to AC-* IDs when available; log in qa.md
+- [ ] Run `*test-integration` — integration tests across UI/API/runtime; log in qa.md
+- [ ] Run `*qa` / `*verify-flow`
   - [ ] Perform smoke tests and functional tests on chat flow
   - [ ] Verify frontend and backend are connected
   - [ ] Log issues, known gaps, and future work in qa.md
 
 ---
 
+### Step 5.5: Security Assessment (`@security.eng`) — recommended before Deliver
+
+- [ ] Invoke `@security.eng` (required when `aamad.config.yml` sets `security.require_security_assessment: true`).
+- [ ] Run `*assess-security` (and `*scan-secrets` / `*review-deps` as needed).
+- [ ] Complete project-context/2.build/security.md with severity-ranked findings.
+- [ ] Route mitigations to owning personas; do not change app logic inside this persona.
+
+---
+
 ### Step 6: Deliver (`@devops.eng`)
 
-- [ ] Invoke `@devops.eng` after QA artifacts are complete.
+- [ ] Invoke `@devops.eng` after QA artifacts are complete (and security.md when required).
 - [ ] Run `*prepare-release`
   - [ ] Confirm qa.md documents MVP verification (pass or scoped gaps)
+  - [ ] Note security.md status (present or accepted gap)
   - [ ] Summarize release scope and version in deploy.md
 - [ ] Run `*define-deploy` and `*configure-cicd`
   - [ ] Add minimal deploy and CI config aligned with SAD and AAMAD_TARGET_RUNTIME
   - [ ] Do not embed secrets; reference `.env.example` keys only
 - [ ] Run `*document-deploy`
   - [ ] Complete project-context/3.deliver/deploy.md (hosting, access control, rollback, Audit)
+- [ ] Run `*document-user-guide`
+  - [ ] Complete project-context/3.deliver/user-guide.md
+- [ ] Optionally run `aamad validate --phase deliver`.
 
 ---
 
@@ -149,7 +172,7 @@ Use the same persona invocation pattern as Phase 1 (Cursor `@name`, Claude Code 
 
 - [ ] Follow docs in setup.md and integration.md to run the full MVP locally
 - [ ] Confirm MVP chat use case works end-to-end
-- [ ] Review all generated artifact files in project-context/2.build
+- [ ] Review all generated artifact files in project-context/2.build and 3.deliver
 
 ---
 
@@ -158,6 +181,17 @@ Use the same persona invocation pattern as Phase 1 (Cursor `@name`, Claude Code 
 - [ ] Archive all MVP milestone artifacts in project-context/2.build and 3.deliver
 - [ ] List all deferred/backlog features in qa.md and/or as GitHub issues
 - [ ] Share repo and context docs with team or community for feedback
+
+---
+
+## Maintenance: Documentation sync
+
+After debugging or enhancing generated frontend, backend, or integration code, artifacts can drift from the implementation.
+
+- [ ] Open a fresh chat and use `.cursor/prompts/prompt-sync-docs` (Claude Code: `/sync-docs`; VS Code: sync-docs prompt).
+- [ ] Reconcile `project-context/2.build/*.md` (and deploy.md if needed) with the current codebase.
+- [ ] Append Audit entries noting action `sync-docs` on each updated artifact.
+- [ ] Re-run `aamad validate` for the relevant phase.
 
 ---
 

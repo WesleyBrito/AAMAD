@@ -37,6 +37,20 @@ RUNTIME_AUDIT_RE = re.compile(
     re.IGNORECASE,
 )
 
+KNOWN_CONFIG_TOP_KEYS = frozenset(
+    {
+        "version",
+        "runtime",
+        "language",
+        "libraries",
+        "ui",
+        "coding_standards",
+        "security",
+        "documentation",
+        "testing",
+    }
+)
+
 
 @dataclass
 class ValidationIssue:
@@ -177,7 +191,36 @@ def validate_project(
             _check_terminal_sections(deploy, result)
             _check_runtime_in_audit(deploy, result, required=True)
 
+    _check_aamad_config(root, result)
     return result
+
+
+def _check_aamad_config(root: Path, result: ValidationResult) -> None:
+    """Validate aamad.config.yml when present (parse + known top-level keys)."""
+    path = root / "aamad.config.yml"
+    if not path.is_file():
+        return
+    rel = "aamad.config.yml"
+    try:
+        import yaml
+
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # pragma: no cover - parse errors
+        result.add("error", rel, f"Failed to parse YAML: {exc}")
+        return
+    if data is None:
+        result.add("warning", rel, "Config file is empty")
+        return
+    if not isinstance(data, dict):
+        result.add("error", rel, "Config root must be a mapping")
+        return
+    unknown = sorted(set(data.keys()) - KNOWN_CONFIG_TOP_KEYS)
+    if unknown:
+        result.add(
+            "error",
+            rel,
+            f"Unknown top-level key(s): {', '.join(unknown)}",
+        )
 
 
 def format_report(result: ValidationResult) -> str:

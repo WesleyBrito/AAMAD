@@ -16,11 +16,24 @@ DATA_DIR = ROOT / "src" / "aamad" / "data"
 
 # Cursor bundle: .cursor/, project-context/, docs
 CURSOR_BUNDLE = DATA_DIR / "aamad_bundle.zip"
-CURSOR_INCLUDE = [".cursor", "project-context", "CHECKLIST.md", "README.md"]
+CURSOR_INCLUDE = [
+    ".cursor",
+    "project-context",
+    "CHECKLIST.md",
+    "README.md",
+    "aamad.config.example.yml",
+]
 
 # Claude Code bundle: .claude/, project-context/, .cursor/templates/, docs
 CLAUDE_BUNDLE = DATA_DIR / "aamad_claude_bundle.zip"
-CLAUDE_INCLUDE = [".claude", "project-context", ".cursor/templates", "CHECKLIST.md", "README.md"]
+CLAUDE_INCLUDE = [
+    ".claude",
+    "project-context",
+    ".cursor/templates",
+    "CHECKLIST.md",
+    "README.md",
+    "aamad.config.example.yml",
+]
 
 
 def _add_to_zip(zf: zipfile.ZipFile, root: Path, items: list[str]) -> None:
@@ -71,13 +84,19 @@ def build_claude_bundle(output: Path | None = None) -> Path:
         # Conversion needs .cursor/ as source; use repo root
         install_claude_code(ROOT, stage, overwrite=True)
         # Also copy project-context, .cursor/templates, docs (conversion only creates .claude/)
-        for name in ["project-context", "CHECKLIST.md", "README.md"]:
+        for name in [
+            "project-context",
+            "CHECKLIST.md",
+            "README.md",
+            "aamad.config.example.yml",
+        ]:
             src = ROOT / name
             if src.exists():
                 if src.is_file():
                     shutil.copy2(src, stage / name)
                 else:
                     shutil.copytree(src, stage / name, dirs_exist_ok=True)
+
         # .cursor/templates (agents reference these)
         templates_src = ROOT / ".cursor" / "templates"
         if templates_src.exists():
@@ -85,7 +104,18 @@ def build_claude_bundle(output: Path | None = None) -> Path:
             shutil.copytree(templates_src, stage / ".cursor" / "templates", dirs_exist_ok=True)
 
         with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-            _add_to_zip(zf, stage, [".claude", "project-context", ".cursor", "CHECKLIST.md", "README.md"])
+            _add_to_zip(
+                zf,
+                stage,
+                [
+                    ".claude",
+                    "project-context",
+                    ".cursor",
+                    "CHECKLIST.md",
+                    "README.md",
+                    "aamad.config.example.yml",
+                ],
+            )
 
     print(f"Updated Claude Code bundle at {target}")
     return target

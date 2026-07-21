@@ -300,8 +300,8 @@ agent:
     assert (tmpdir / ".github" / "agents" / "devops-eng.agent.md").exists()
 
 
-def test_qa_eng_handoff_to_devops_eng(tmpdir):
-    """qa-eng agent gets Deliver MVP handoff to devops-eng."""
+def test_qa_eng_handoff_to_security_and_devops(tmpdir):
+    """qa-eng agent gets Security Assessment and Deliver MVP handoffs."""
     agents_dir = tmpdir / "agents"
     agents_dir.mkdir()
     (agents_dir / "qa-eng.md").write_text(
@@ -317,8 +317,29 @@ agent:
     )
     convert_agents(agents_dir, tmpdir)
     text = (tmpdir / ".github" / "agents" / "qa-eng.agent.md").read_text()
+    assert "security-eng" in text
     assert "devops-eng" in text
     assert "Deliver MVP" in text
+
+
+def test_convert_agents_includes_security_eng(tmpdir):
+    """convert_agents writes security-eng agent file when source exists."""
+    agents_dir = tmpdir / "agents"
+    agents_dir.mkdir()
+    (agents_dir / "security-eng.md").write_text(
+        """---
+agent:
+  name: Security Engineer
+  id: security-eng
+  role: Assess MVP security.
+---
+
+# Security
+"""
+    )
+    out = convert_agents(agents_dir, tmpdir)
+    assert len(out) == 1
+    assert (tmpdir / ".github" / "agents" / "security-eng.agent.md").exists()
 
 
 def test_convert_agents_creates_vscode_format(tmpdir, sample_agent):
@@ -480,9 +501,12 @@ def test_get_vscode_planned_paths():
 
     dest = Path("/some/dest")
     paths = get_vscode_planned_paths(dest)
-    assert len(paths) == len(RULE_ORDER) + len(AGENT_IDS) + 2  # + prompts file + settings
+    from aamad.vscode_copilot import PROMPT_SPECS
+
+    assert len(paths) == len(RULE_ORDER) + len(AGENT_IDS) + len(PROMPT_SPECS) + 1  # + settings
     assert dest / ".vscode" / "settings.json" in paths
     assert dest / ".github" / "prompts" / "phase-1-define.prompt.md" in paths
+    assert dest / ".github" / "prompts" / "sync-docs.prompt.md" in paths
 
 
 def test_extract_artifacts_vscode_creates_github_and_agents_md(tmpdir):

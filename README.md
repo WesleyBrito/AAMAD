@@ -5,8 +5,22 @@ It systematizes research-driven planning, modular AI agent workflows, and rapid 
 
 ---
 
+## Principles and benefits
+
+AAMAD changes “vibe coding” from ad-hoc prompting into a **context-first, persona-driven** workflow:
+
+- **Single-responsibility personas** own clear epics (Define → Build → Deliver) with explicit inputs, outputs, and prohibited actions.
+- **Artifacts over chat memory:** PRD, SAD, and phase docs under `project-context/` make decisions auditable and reproducible.
+- **Runtime adapters are an implementation choice** (`AAMAD_TARGET_RUNTIME`), not the methodology itself.
+- **Quality gates** (required headings, optional `aamad validate`, QA → security → deliver) keep MVP scope honest.
+
+**Benefits you can expect:** clearer requirements before code, less rework from underspecified prompts, traceable handoffs between agents, and documentation that stays useful when you re-sync after code changes.
+
+---
+
 ## Table of Contents
 
+- [Principles and benefits](#principles-and-benefits)
 - [What is AAMAD?](#what-is-aamad)
 - [Runtime adapters](#runtime-adapters)
 - [AAMAD phases at a glance](#aamad-phases-at-a-glance)
@@ -81,11 +95,11 @@ flowchart LR
   classDef list fill:#222,stroke:#555,color:#fff;
 ``` 
 
-- **Phase 1 (Define):** Product Manager persona (`@product-mgr`) conducts prompt-driven discovery and context setup, supported by templates for Market Research Document (MRD) and Product Requirements Document (PRD), to standardize project scoping.
+- **Phase 1 (Define):** Product Manager persona (`@product-mgr`) conducts structured elicitation (recommended), optional MRD for commercial products, and PRD/user stories to standardize project scoping.
 
-- **Phase 2 (Build):** Multi‑agent execution by Project Manager, System Architect, Frontend Engineer, Backend Engineer, Integration Engineer, and QA Engineer, governed by core/development-workflow rules and the selected runtime adapter rule.
+- **Phase 2 (Build):** Multi‑agent execution by Project Manager, System Architect, Frontend Engineer, Backend Engineer, Integration Engineer, QA Engineer, and (recommended) Security Engineer, governed by core/development-workflow rules and the selected runtime adapter rule.
 
-- **Phase 3 (Deliver):** DevOps Engineer (`@devops.eng`) packages the validated MVP using the `delivery-workflow` rule; primary artifact is `project-context/3.deliver/deploy.md`.
+- **Phase 3 (Deliver):** DevOps Engineer (`@devops.eng`) packages the validated MVP using the `delivery-workflow` rule; artifacts include `project-context/3.deliver/deploy.md` and optionally `user-guide.md`.
 
 ---
 
@@ -341,12 +355,14 @@ Inspect bundle contents: `aamad bundle-info --verbose` or `aamad bundle-info --i
 
 ## Phase 1: Define Stage (Product Manager)
 
-The Product Manager persona (`@product-mgr`) conducts prompt-driven discovery and context setup to standardize project scoping:
+The Product Manager persona (`@product-mgr`) conducts discovery and context setup to standardize project scoping:
 
-- **Market Research:** Generate Market Research Document (MRD) using `.cursor/templates/mrd-template.md`
-- **Requirements:** Generate Product Requirements Document (PRD) using `.cursor/templates/prd-template.md`
-- **Context Summary:** Create comprehensive context handoff artifacts for technical teams
-- **Validation:** Ensure completeness of market analysis, user personas, feature requirements, and success metrics
+- **Elicitation (recommended):** Structured questionnaire → `system-description.md` via `*elicit-requirements`
+- **Market Research (optional):** MRD using `.cursor/templates/mrd-template.md` for commercial products; skip for internal/personal tools
+- **Requirements:** PRD using `.cursor/templates/prd-template.md`
+- **User stories:** MVP stories for architecture and QA traceability
+- **Project config:** Optional `aamad.config.yml` for language, UI, testing, and security defaults
+- **Validation:** Run `aamad validate --phase define` when artifacts exist
 
 Phase 1 outputs are stored in `project-context/1.define/` and provide the foundation for all subsequent development phases.
 
