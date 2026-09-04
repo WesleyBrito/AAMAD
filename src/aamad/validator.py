@@ -28,6 +28,11 @@ BUILD_ARTIFACTS = (
     "project-context/2.build/integration.md",
     "project-context/2.build/qa.md",
 )
+# Optional Build artifact: warning-only so projects that upgrade mid-build or
+# were built before this capability existed do not fail the build/deliver gate.
+BUILD_OPTIONAL = (
+    "project-context/2.build/evals.md",
+)
 DELIVER_ARTIFACTS = (
     "project-context/3.deliver/deploy.md",
 )
@@ -176,6 +181,17 @@ def validate_project(
             _check_terminal_sections(path, result)
             if rel.endswith(("backend.md", "integration.md", "qa.md")):
                 _check_runtime_in_audit(path, result, required=rel.endswith("backend.md"))
+
+        for rel in BUILD_OPTIONAL:
+            path = root / rel
+            if path.is_file():
+                _check_terminal_sections(path, result)
+            else:
+                result.add(
+                    "warning",
+                    rel,
+                    "evals.md not found (recommended before Deliver; run *run-evals)",
+                )
 
     if phase == "deliver":
         if not qa_present:

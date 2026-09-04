@@ -2,14 +2,15 @@
 Claude Code IDE conversion logic for AAMAD.
 
 Converts Cursor-format artifacts (.cursor/rules/*.mdc, .cursor/agents/*.md,
-.cursor/prompts/) into Claude Code format (.claude/rules/, .claude/agents/,
-.claude/commands/, .claude/settings.json).
+.cursor/prompts/, .cursor/skills/) into Claude Code format (.claude/rules/,
+.claude/agents/, .claude/commands/, .claude/skills/, .claude/settings.json).
 """
 
 from __future__ import annotations
 
 import json
 import re
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -266,6 +267,42 @@ def convert_prompts(
     return created
 
 
+def convert_skills(
+    cursor_skills_dir: Path,
+    out_dir: Path,
+) -> list[Path]:
+    """
+    Convert Cursor skills to Claude Code skills (native skills path).
+
+    Inputs: .cursor/skills/<skill-name>/ (SKILL.md + supporting files)
+    Outputs: .claude/skills/<skill-name>/ (same structure; .cursor/rules/
+    references inside markdown files are rewritten to .claude/rules/).
+    """
+    claude_skills = out_dir / ".claude" / "skills"
+    created: list[Path] = []
+
+    if not cursor_skills_dir.exists():
+        return created
+
+    for skill_dir in sorted(p for p in cursor_skills_dir.iterdir() if p.is_dir()):
+        dest_skill_dir = claude_skills / skill_dir.name
+        for file_path in sorted(skill_dir.rglob("*")):
+            if file_path.is_dir():
+                continue
+            rel = file_path.relative_to(skill_dir)
+            out_path = dest_skill_dir / rel
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            if file_path.suffix == ".md":
+                text = file_path.read_text(encoding="utf-8")
+                text = _rule_body_to_claude(text)
+                out_path.write_text(text, encoding="utf-8")
+            else:
+                shutil.copy2(file_path, out_path)
+            created.append(out_path)
+
+    return created
+
+
 def write_settings(out_dir: Path) -> Path:
     """Write .claude/settings.json with permissions and AAMAD_TARGET_RUNTIME."""
     claude_dir = out_dir / ".claude"
@@ -313,6 +350,7 @@ def install_claude_code(
     cursor_rules = cursor_root / ".cursor" / "rules"
     cursor_agents = cursor_root / ".cursor" / "agents"
     cursor_prompts = cursor_root / ".cursor" / "prompts"
+    cursor_skills = cursor_root / ".cursor" / "skills"
 
     if not cursor_rules.exists():
         raise FileNotFoundError(f"Rules directory not found: {cursor_rules}")
@@ -333,6 +371,8 @@ def install_claude_code(
         created.extend(convert_agents(cursor_agents, dest))
     if cursor_prompts.exists():
         created.extend(convert_prompts(cursor_prompts, dest))
+    if cursor_skills.exists():
+        created.extend(convert_skills(cursor_skills, dest))
     write_settings(dest)
     created.append(dest / ".claude" / "settings.json")
 

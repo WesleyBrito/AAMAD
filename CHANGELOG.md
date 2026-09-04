@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-09-04
+
+### Added
+
+- Evaluation skill `.cursor/skills/run-evals/` (owned by `@qa.eng`, `*run-evals`): defines and implements the eval strategy from `project-context/` — golden dataset, code-based checks, LLM-as-judge scoring with calibration, and production monitoring recommendations for `@devops.eng`. Writes `project-context/2.build/evals.md` using the new `evals-template.md`.
+- Operator gap-check in the skill: when business context needed for thresholds/SLA/risk tolerance is missing, the agent asks the operator in a single batched round (via `AskQuestion` in Cursor, a numbered list elsewhere) instead of inventing values; answers are recorded in `evals.md` Assumptions.
+- `@system.arch` action `*define-eval-criteria`: fills a new evaluation criteria table in SAD section 9 (dimension, metric, threshold, grading method, source) so eval design happens before Build, per standard eval-suite practice.
+- New `Evals` epic in `epics-index.mdc`; `evals.md` wired as a recommended input to `@devops.eng` and the Deliver phase gate.
+- Converters for the new skill: native `.claude/skills/run-evals/` for Claude Code; `.github/prompts/run-evals.prompt.md` bound to `qa-eng` for VS Code Copilot (no native skills primitive).
+- CHECKLIST "Adopting evals in an existing project" maintenance section.
+
+### Changed
+
+- `aamad validate` treats `evals.md` as an optional Build artifact (warning-only, like `mrd.md`) and checks its terminal sections when present.
+
+### Compatibility note
+
+- The `@system.arch` eval-criteria step is **new-project guidance, not a prerequisite**. Projects that already reached QA (or further) before this release are not out of compliance: run `*run-evals` directly and answer its gap-check questions in place of the SAD table, then optionally backfill SAD section 9 from `evals.md` via `prompt-sync-docs`. `evals.md` stays at warning level in the validator and the SAD section 9 expansion is not a required heading, so upgrading mid-project does not fail any existing `aamad validate` gate.
+
 ## [0.7.5] - 2026-07-20
 
 ### Changed

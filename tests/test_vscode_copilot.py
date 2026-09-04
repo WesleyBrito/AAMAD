@@ -13,6 +13,7 @@ from aamad.vscode_copilot import (
     convert_agents,
     convert_prompts,
     convert_rules,
+    convert_skills,
     get_vscode_planned_paths,
     install_vscode_copilot,
     write_settings,
@@ -119,6 +120,27 @@ def sample_prompt(tmpdir):
     content = "Generate Market Research and PRD using the templates."
     (prompts_dir / "prompt-phase-1").write_text(content)
     return prompts_dir
+
+
+@pytest.fixture
+def sample_skill(tmpdir):
+    """Create a sample Cursor skill with a SKILL.md."""
+    skills_dir = tmpdir / "skills"
+    skill_dir = skills_dir / "run-evals"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        """---
+name: run-evals
+description: Test eval skill.
+disable-model-invocation: true
+---
+
+# Run Evals
+
+Define and run the eval suite.
+"""
+    )
+    return skills_dir
 
 
 def test_parse_frontmatter_rule_extracts_body():
@@ -405,6 +427,27 @@ def test_convert_prompts_missing_returns_empty(tmpdir):
     assert out == []
 
 
+def test_convert_skills_creates_prompt_bound_to_agent(tmpdir, sample_skill):
+    """convert_skills creates .github/prompts/run-evals.prompt.md bound to qa-eng."""
+    out = convert_skills(sample_skill, tmpdir)
+    assert len(out) == 1
+    prompt_file = tmpdir / ".github" / "prompts" / "run-evals.prompt.md"
+    assert prompt_file.exists()
+    text = prompt_file.read_text()
+    assert "---" in text
+    assert "agent: qa-eng" in text
+    assert "Run Evals" in text
+    assert "Define and run the eval suite." in text
+
+
+def test_convert_skills_missing_skill_returns_empty(tmpdir):
+    """convert_skills returns [] when the named skill directory does not exist."""
+    skills_dir = tmpdir / "skills"
+    skills_dir.mkdir()
+    out = convert_skills(skills_dir, tmpdir)
+    assert out == []
+
+
 def test_write_settings_creates_valid_json(tmpdir):
     """write_settings creates valid .vscode/settings.json with expected keys."""
     path = write_settings(tmpdir, merge=False)
@@ -459,6 +502,10 @@ agent:
     )
     (cursor_root / ".cursor" / "prompts").mkdir(parents=True)
     (cursor_root / ".cursor" / "prompts" / "prompt-phase-1").write_text("Phase 1 prompt.")
+    (cursor_root / ".cursor" / "skills" / "run-evals").mkdir(parents=True)
+    (cursor_root / ".cursor" / "skills" / "run-evals" / "SKILL.md").write_text(
+        "---\nname: run-evals\ndescription: Test.\n---\n\n# Run Evals\n"
+    )
 
     dest = tmpdir / "out"
     dest.mkdir()
@@ -468,6 +515,7 @@ agent:
     assert (dest / ".github" / "instructions" / "aamad-core.instructions.md").exists()
     assert (dest / ".github" / "agents" / "backend-eng.agent.md").exists()
     assert (dest / ".github" / "prompts" / "phase-1-define.prompt.md").exists()
+    assert (dest / ".github" / "prompts" / "run-evals.prompt.md").exists()
     assert (dest / ".vscode" / "settings.json").exists()
 
 
@@ -501,12 +549,15 @@ def test_get_vscode_planned_paths():
 
     dest = Path("/some/dest")
     paths = get_vscode_planned_paths(dest)
-    from aamad.vscode_copilot import PROMPT_SPECS
+    from aamad.vscode_copilot import PROMPT_SPECS, SKILL_PROMPT_SPECS
 
-    assert len(paths) == len(RULE_ORDER) + len(AGENT_IDS) + len(PROMPT_SPECS) + 1  # + settings
+    assert len(paths) == len(RULE_ORDER) + len(AGENT_IDS) + len(PROMPT_SPECS) + len(
+        SKILL_PROMPT_SPECS
+    ) + 1  # + settings
     assert dest / ".vscode" / "settings.json" in paths
     assert dest / ".github" / "prompts" / "phase-1-define.prompt.md" in paths
     assert dest / ".github" / "prompts" / "sync-docs.prompt.md" in paths
+    assert dest / ".github" / "prompts" / "run-evals.prompt.md" in paths
 
 
 def test_extract_artifacts_vscode_creates_github_and_agents_md(tmpdir):
