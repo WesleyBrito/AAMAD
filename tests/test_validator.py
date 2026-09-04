@@ -97,6 +97,39 @@ def test_mrd_optional_warns_only(project: Path) -> None:
     )
 
 
+def test_evals_optional_warns_only(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    for name in ("setup.md", "frontend.md", "backend.md", "integration.md", "qa.md"):
+        _write(project / "project-context/2.build" / name)
+    result = validate_project(project, phase="build")
+    assert result.ok, format_report(result)
+    assert any(
+        i.level == "warning" and i.path.endswith("evals.md") for i in result.issues
+    )
+
+
+def test_evals_present_checks_terminal_sections(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    for name in ("setup.md", "frontend.md", "backend.md", "integration.md", "qa.md"):
+        _write(project / "project-context/2.build" / name)
+    _write(project / "project-context/2.build/evals.md", "# Evals\n\nIncomplete.\n")
+    result = validate_project(project, phase="build")
+    assert not result.ok
+    assert any("evals.md" in i.path for i in result.issues if i.level == "error")
+
+
+def test_evals_present_with_terminal_sections_passes(project: Path) -> None:
+    _write(project / "project-context/1.define/prd.md")
+    _write(project / "project-context/1.define/sad.md")
+    for name in ("setup.md", "frontend.md", "backend.md", "integration.md", "qa.md", "evals.md"):
+        _write(project / "project-context/2.build" / name)
+    result = validate_project(project, phase="build")
+    assert result.ok, format_report(result)
+    assert not any(i.path.endswith("evals.md") for i in result.issues)
+
+
 def test_unknown_config_key_is_error(project: Path) -> None:
     _write(project / "project-context/1.define/prd.md")
     _write(project / "project-context/1.define/sad.md")

@@ -12,6 +12,7 @@ from aamad.claude_code import (
     convert_agents,
     convert_prompts,
     convert_rules,
+    convert_skills,
     install_claude_code,
     write_settings,
 )
@@ -84,6 +85,28 @@ def sample_prompt(tmpdir):
     content = "Generate Market Research and PRD using the templates."
     (prompts_dir / "prompt-phase-1").write_text(content)
     return prompts_dir
+
+
+@pytest.fixture
+def sample_skill(tmpdir):
+    """Create a sample Cursor skill with a SKILL.md and a reference file."""
+    skills_dir = tmpdir / "skills"
+    skill_dir = skills_dir / "run-evals"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        """---
+name: run-evals
+description: Test eval skill.
+disable-model-invocation: true
+---
+
+# Run Evals
+
+See .cursor/rules/adapter-crewai.mdc for details.
+"""
+    )
+    (skill_dir / "reference.md").write_text("# Reference\n\nExtra detail.\n")
+    return skills_dir
 
 
 def test_parse_frontmatter_rule_extracts_body():
@@ -176,6 +199,33 @@ def test_convert_prompts_creates_sync_docs(tmpdir):
     out = convert_prompts(prompts_dir, tmpdir)
     assert any(p.name == "sync-docs.md" for p in out)
     assert (tmpdir / ".claude" / "commands" / "sync-docs.md").exists()
+
+
+def test_convert_skills_creates_skill_dir(tmpdir, sample_skill):
+    """convert_skills creates .claude/skills/run-evals/SKILL.md and reference.md."""
+    out = convert_skills(sample_skill, tmpdir)
+    assert len(out) == 2
+    skill_md = tmpdir / ".claude" / "skills" / "run-evals" / "SKILL.md"
+    reference_md = tmpdir / ".claude" / "skills" / "run-evals" / "reference.md"
+    assert skill_md.exists()
+    assert reference_md.exists()
+    assert "Run Evals" in skill_md.read_text()
+    assert "Extra detail." in reference_md.read_text()
+
+
+def test_convert_skills_rewrites_rule_paths(tmpdir, sample_skill):
+    """convert_skills rewrites .cursor/rules/*.mdc references to .claude/rules/*.md."""
+    convert_skills(sample_skill, tmpdir)
+    skill_md = tmpdir / ".claude" / "skills" / "run-evals" / "SKILL.md"
+    text = skill_md.read_text()
+    assert ".claude/rules/adapter-crewai.md" in text
+    assert ".cursor/rules/" not in text
+
+
+def test_convert_skills_missing_dir_returns_empty(tmpdir):
+    """convert_skills returns [] when the skills directory does not exist."""
+    out = convert_skills(tmpdir / "nonexistent", tmpdir)
+    assert out == []
 
 
 def test_write_settings_creates_valid_json(tmpdir):
@@ -339,6 +389,10 @@ agent:
     )
     (cursor_root / ".cursor" / "prompts").mkdir(parents=True)
     (cursor_root / ".cursor" / "prompts" / "prompt-phase-1").write_text("Phase 1 prompt.")
+    (cursor_root / ".cursor" / "skills" / "run-evals").mkdir(parents=True)
+    (cursor_root / ".cursor" / "skills" / "run-evals" / "SKILL.md").write_text(
+        "---\nname: run-evals\ndescription: Test.\n---\n\n# Run Evals\n"
+    )
 
     dest = tmpdir / "out"
     dest.mkdir()
@@ -349,6 +403,7 @@ agent:
     assert (dest / ".claude" / "rules" / "aamad-core.md").exists()
     assert (dest / ".claude" / "agents" / "backend-eng.md").exists()
     assert (dest / ".claude" / "commands" / "phase-1-define.md").exists()
+    assert (dest / ".claude" / "skills" / "run-evals" / "SKILL.md").exists()
     assert (dest / ".claude" / "settings.json").exists()
 
 

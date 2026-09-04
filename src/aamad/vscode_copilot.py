@@ -2,8 +2,9 @@
 VS Code / GitHub Copilot IDE conversion logic for AAMAD.
 
 Converts Cursor-format artifacts (.cursor/rules/*.mdc, .cursor/agents/*.md,
-.cursor/prompts/) into VS Code / Copilot format (.github/instructions/*.instructions.md,
-.github/agents/*.agent.md, .github/prompts/, .vscode/settings.json).
+.cursor/prompts/, .cursor/skills/) into VS Code / Copilot format
+(.github/instructions/*.instructions.md, .github/agents/*.agent.md,
+.github/prompts/, .vscode/settings.json).
 """
 
 from __future__ import annotations
@@ -322,6 +323,47 @@ def convert_prompts(cursor_prompts_dir: Path, out_dir: Path) -> list[Path]:
     return created
 
 
+# Copilot has no skills primitive; convert Cursor skills to prompt files
+# bound to the owning agent instead.
+SKILL_PROMPT_SPECS = {
+    "run-evals": {
+        "out": "run-evals.prompt.md",
+        "description": "AAMAD: Define and run the evaluation strategy (golden dataset, code-based checks, LLM-as-judge, production monitoring recommendations)",
+        "agent": "qa-eng",
+    },
+}
+
+
+def convert_skills(cursor_skills_dir: Path, out_dir: Path) -> list[Path]:
+    """
+    Convert Cursor skills (.cursor/skills/<name>/SKILL.md) to VS Code Copilot
+    prompt files (.github/prompts/*.prompt.md) bound to the owning agent,
+    since Copilot has no skills primitive. Body is copied from SKILL.md with
+    its own frontmatter stripped and replaced.
+    """
+    prompts_dir = out_dir / ".github" / "prompts"
+    prompts_dir.mkdir(parents=True, exist_ok=True)
+
+    created: list[Path] = []
+    for skill_name, spec in SKILL_PROMPT_SPECS.items():
+        skill_md = cursor_skills_dir / skill_name / "SKILL.md"
+        if not skill_md.exists():
+            continue
+        _, body = _parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+        frontmatter_lines = [
+            "---",
+            f'description: "{spec["description"]}"',
+            f"agent: {spec['agent']}",
+            "---",
+            "",
+        ]
+        content = "\n".join(frontmatter_lines) + body
+        out_path = prompts_dir / spec["out"]
+        out_path.write_text(content, encoding="utf-8")
+        created.append(out_path)
+    return created
+
+
 # Keys we set for AAMAD (merge only these into existing settings)
 VSCODE_AAMAD_SETTINGS = {
     "chat.agent.enabled": True,
@@ -368,6 +410,8 @@ def get_vscode_planned_paths(dest: Path) -> list[Path]:
         paths.append(dest / ".github" / "agents" / f"{agent_id}.agent.md")
     for spec in PROMPT_SPECS.values():
         paths.append(dest / ".github" / "prompts" / spec["out"])
+    for spec in SKILL_PROMPT_SPECS.values():
+        paths.append(dest / ".github" / "prompts" / spec["out"])
     paths.append(dest / ".vscode" / "settings.json")
     return paths
 
@@ -395,6 +439,7 @@ def install_vscode_copilot(
     cursor_rules = cursor_root / ".cursor" / "rules"
     cursor_agents = cursor_root / ".cursor" / "agents"
     cursor_prompts = cursor_root / ".cursor" / "prompts"
+    cursor_skills = cursor_root / ".cursor" / "skills"
 
     if not cursor_rules.exists():
         raise FileNotFoundError(f"Rules directory not found: {cursor_rules}")
@@ -413,6 +458,8 @@ def install_vscode_copilot(
         created.extend(convert_agents(cursor_agents, dest))
     if cursor_prompts.exists():
         created.extend(convert_prompts(cursor_prompts, dest))
+    if cursor_skills.exists():
+        created.extend(convert_skills(cursor_skills, dest))
     settings_path = write_settings(dest, merge=merge_settings)
     created.append(settings_path)
 
